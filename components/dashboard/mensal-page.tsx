@@ -58,8 +58,8 @@ export function MensalPage() {
                     <ComposedChart data={data.evolucao_mensal} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="monthlyBase" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.3} />
-                          <stop offset="100%" stopColor="#38bdf8" stopOpacity={0.02} />
+                          <stop offset="0%" stopColor="var(--primary-color)" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="var(--primary-color)" stopOpacity={0.02} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -85,7 +85,7 @@ export function MensalPage() {
                         dataKey="base_inicio"
                         name="Base"
                         fill="url(#monthlyBase)"
-                        stroke="#246bff"
+                        stroke="var(--primary-color)"
                         strokeWidth={2}
                       />
                       <Line
@@ -93,9 +93,9 @@ export function MensalPage() {
                         type="monotone"
                         dataKey="churn"
                         name="Churn %"
-                        stroke="#fb7185"
+                        stroke="var(--danger-color)"
                         strokeWidth={3}
-                        dot={{ r: 4, fill: "#fb7185", stroke: "#061018", strokeWidth: 2 }}
+                        dot={{ r: 4, fill: "var(--danger-color)", stroke: "var(--surface)", strokeWidth: 2 }}
                       />
                     </ComposedChart>
                   </ResponsiveContainer>
@@ -114,9 +114,9 @@ export function MensalPage() {
                         type="monotone"
                         dataKey="saldo"
                         name="Saldo"
-                        stroke="#246bff"
+                        stroke="var(--primary-color)"
                         strokeWidth={3}
-                        dot={{ r: 3, fill: "#246bff" }}
+                        dot={{ r: 3, fill: "var(--primary-color)" }}
                       />
                     </LineChart>
                   </ResponsiveContainer>

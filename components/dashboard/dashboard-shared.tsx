@@ -7,13 +7,11 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  ComposedChart,
   Legend,
   Pie,
   PieChart,
-  PolarAngleAxis,
-  PolarGrid,
-  Radar,
-  RadarChart,
+  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -29,9 +27,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const statusColors = {
-  bons: "#22c55e",
-  alerta: "#f59e0b",
-  critico: "#ef4444"
+  bons: "var(--success-color)",
+  alerta: "var(--warning-color)",
+  critico: "var(--danger-color)"
 };
 
 const healthGradient = {
@@ -333,19 +331,12 @@ export function GestorStatusCard({ gestores }: { gestores: GestorMetric[] }) {
   );
 }
 
-export function GestorRadarCard({ gestores }: { gestores: GestorMetric[] }) {
-  const maxLtv = Math.max(...gestores.map((gestor) => gestor.ltv_medio), 1);
-  const radarData = gestores.map((gestor) => {
-    const total = gestor.bons + gestor.alerta + gestor.critico;
-    const control = total ? ((gestor.bons + gestor.alerta) / total) * 100 : 0;
-
-    return {
-      gestor: gestor.nome,
-      "Taxa de sucesso": gestor.taxa_sucesso,
-      "Retenção relativa": (gestor.ltv_medio / maxLtv) * 100,
-      "Carteira estável": control
-    };
-  });
+export function GestorPerformanceChart({ gestores }: { gestores: GestorMetric[] }) {
+  const chartData = gestores.map((gestor) => ({
+    gestor: gestor.nome,
+    "Taxa de sucesso": gestor.taxa_sucesso,
+    "LTV médio": gestor.ltv_medio
+  }));
 
   return (
     <Card className="p-6">
@@ -353,21 +344,51 @@ export function GestorRadarCard({ gestores }: { gestores: GestorMetric[] }) {
         <div>
           <CardTitle>Mapa de performance</CardTitle>
           <p className="theme-muted mt-1 text-sm">
-            Compara taxa de sucesso, retenção relativa e estabilidade da carteira.
+            Compara taxa de sucesso e LTV médio com dados reais de cada gestor.
           </p>
         </div>
       </CardHeader>
       <CardContent className="mt-5">
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
-            <RadarChart outerRadius="68%" data={radarData}>
-              <PolarGrid stroke="var(--border-color)" />
-              <PolarAngleAxis dataKey="gestor" tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+            <ComposedChart data={chartData} margin={{ top: 8, right: 10, left: -10, bottom: 0 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis dataKey="gestor" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+              <YAxis
+                yAxisId="left"
+                axisLine={false}
+                tickLine={false}
+                domain={[0, 100]}
+                tick={{ fill: "var(--muted-color)", fontSize: 12 }}
+                tickFormatter={(value) => `${value}%`}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "var(--muted-color)", fontSize: 12 }}
+              />
               <Tooltip content={<CustomTooltip />} />
-              <Radar dataKey="Taxa de sucesso" fill="#38bdf8" stroke="#38bdf8" fillOpacity={0.25} />
-              <Radar dataKey="Retenção relativa" fill="#34d399" stroke="#34d399" fillOpacity={0.2} />
-              <Radar dataKey="Carteira estável" fill="#f59e0b" stroke="#f59e0b" fillOpacity={0.18} />
-            </RadarChart>
+              <Legend />
+              <Bar
+                yAxisId="left"
+                dataKey="Taxa de sucesso"
+                name="Taxa de sucesso"
+                fill="var(--primary-color)"
+                radius={[10, 10, 0, 0]}
+                barSize={28}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="LTV médio"
+                name="LTV médio"
+                stroke="var(--success-color)"
+                strokeWidth={3}
+                dot={{ r: 4, fill: "var(--success-color)" }}
+              />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
@@ -387,14 +408,20 @@ export function MonthExitBar({ data }: { data: SaidasPorMes[] }) {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={monthData} margin={{ top: 8, right: 0, left: -16, bottom: 0 }}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
-          <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
+          <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+          <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="saidas" radius={[10, 10, 0, 0]}>
             {monthData.map((entry) => (
               <Cell
                 key={`${entry.mes}-${entry.saidas}`}
-                fill={entry.churn > 12 ? "#ef4444" : entry.churn > 8 ? "#f59e0b" : "#38bdf8"}
+                fill={
+                  entry.churn > 12
+                    ? "var(--danger-color)"
+                    : entry.churn > 8
+                      ? "var(--warning-color)"
+                      : "var(--primary-color)"
+                }
               />
             ))}
           </Bar>

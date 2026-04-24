@@ -18,24 +18,32 @@
   --shadow-color: rgba(15, 23, 42, 0.06);
   --tooltip-bg: rgba(255, 255, 255, 0.98);
   --tooltip-border: rgba(36, 107, 255, 0.18);
+  --primary-color: #246bff;
+  --success-color: #16a34a;
+  --warning-color: #d97706;
+  --danger-color: #dc2626;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --app-bg: #0f1724;
-  --surface: #121826;
-  --surface-soft: #172031;
-  --surface-strong: #1d2940;
-  --sidebar-surface: #111827;
-  --border-color: #253044;
+  --app-bg: #0d0f14;
+  --surface: #161a23;
+  --surface-soft: #111318;
+  --surface-strong: #1a2233;
+  --sidebar-surface: #111318;
+  --border-color: #1e2333;
   --text-color: #f8fafc;
-  --muted-color: #98a2b3;
-  --nav-hover: #182132;
-  --nav-active: #1b2c4e;
-  --icon-surface: #1e293b;
-  --shadow-color: rgba(2, 8, 23, 0.35);
+  --muted-color: #8b92a5;
+  --nav-hover: #181c25;
+  --nav-active: rgba(36, 107, 255, 0.14);
+  --icon-surface: #1a1f2b;
+  --shadow-color: rgba(2, 8, 23, 0.32);
   --tooltip-bg: rgba(18, 24, 38, 0.98);
   --tooltip-border: rgba(72, 124, 255, 0.28);
+  --primary-color: #4f8cff;
+  --success-color: #22c55e;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
 }
 
 .chip-green {
@@ -188,4 +196,21 @@ input {
 
 .theme-icon-surface {
   background: var(--icon-surface);
+}
+
+.brand-logo {
+  width: 172px;
+  height: 44px;
+  margin-inline: auto;
+  background: var(--text-color);
+  -webkit-mask-image: url("/logomarcha.png");
+  mask-image: url("/logomarcha.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-mode: luminance;
+  mask-mode: luminance;
 }

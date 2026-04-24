@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
@@ -44,17 +43,13 @@ export function DashboardShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<ThemeMode>("light");
+  const [theme, setTheme] = useState<ThemeMode>("dark");
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem("marcha-theme");
-    if (savedTheme === "light" || savedTheme === "dark") {
-      setTheme(savedTheme);
-      return;
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    if (currentTheme === "light" || currentTheme === "dark") {
+      setTheme(currentTheme);
     }
-
-    const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    setTheme(preferred);
   }, []);
 
   useEffect(() => {
@@ -67,15 +62,8 @@ export function DashboardShell({
       <div className="flex min-h-screen flex-col md:flex-row">
         <aside className="theme-sidebar border-b md:sticky md:top-0 md:h-screen md:w-[280px] md:border-b-0 md:border-r">
           <div className="flex h-full flex-col">
-            <div className="theme-border border-b px-6 py-6">
-              <Image
-                src="/logomarcha.png"
-                alt="Marcha Ads"
-                width={700}
-                height={495}
-                priority
-                className="h-auto w-full max-w-[172px]"
-              />
+            <div className="theme-border border-b px-6 py-7">
+              <div className="brand-logo" aria-label="Marcha Ads" role="img" />
             </div>
 
             <nav className="space-y-1 px-4 py-6">
@@ -109,40 +97,32 @@ export function DashboardShell({
             </nav>
 
             <div className="theme-border mt-auto border-t px-6 py-5">
-              <div className="mb-5 rounded-[16px] border theme-soft-surface p-1">
-                <div className="grid grid-cols-2 gap-1">
+              <div className="mx-auto w-fit rounded-full border theme-soft-surface p-1">
+                <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => setTheme("light")}
                     className={cn(
-                      "flex items-center justify-center gap-2 rounded-[12px] px-3 py-2 text-sm font-medium transition",
-                      theme === "light" ? "bg-primary text-white" : "theme-muted"
+                      "flex h-8 w-8 items-center justify-center rounded-full transition",
+                      theme === "light" ? "bg-primary text-white shadow-sm" : "theme-muted"
                     )}
+                    aria-label="Ativar tema claro"
+                    title="Tema claro"
                   >
                     <Sun className="h-4 w-4" />
-                    Light
                   </button>
                   <button
                     type="button"
                     onClick={() => setTheme("dark")}
                     className={cn(
-                      "flex items-center justify-center gap-2 rounded-[12px] px-3 py-2 text-sm font-medium transition",
-                      theme === "dark" ? "bg-primary text-white" : "theme-muted"
+                      "flex h-8 w-8 items-center justify-center rounded-full transition",
+                      theme === "dark" ? "bg-primary text-white shadow-sm" : "theme-muted"
                     )}
+                    aria-label="Ativar tema escuro"
+                    title="Tema escuro"
                   >
                     <Moon className="h-4 w-4" />
-                    Dark
                   </button>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="theme-strong-surface flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-primary">
-                  MD
-                </div>
-                <div>
-                  <p className="text-sm font-semibold theme-text">Marcha Digital</p>
-                  <p className="text-xs theme-muted">Agência de Tráfego Pago</p>
                 </div>
               </div>
             </div>

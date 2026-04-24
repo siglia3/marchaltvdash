@@ -124,16 +124,16 @@ export function DashboardPage() {
                     <ComposedChart data={momentumData} margin={{ top: 0, right: 0, left: -16, bottom: 0 }}>
                       <defs>
                         <linearGradient id="overviewBase" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.34} />
-                          <stop offset="100%" stopColor="#38bdf8" stopOpacity={0.02} />
+                          <stop offset="0%" stopColor="var(--primary-color)" stopOpacity={0.34} />
+                          <stop offset="100%" stopColor="var(--primary-color)" stopOpacity={0.02} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid vertical={false} strokeDasharray="3 3" />
                       <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Area type="monotone" dataKey="base" stroke="#246bff" strokeWidth={2.5} fill="url(#overviewBase)" name="Base" />
-                      <Line type="monotone" dataKey="churn" stroke="#ef4444" strokeWidth={2.5} dot={false} name="Churn %" />
+                      <Area type="monotone" dataKey="base" stroke="var(--primary-color)" strokeWidth={2.5} fill="url(#overviewBase)" name="Base" />
+                      <Line type="monotone" dataKey="churn" stroke="var(--danger-color)" strokeWidth={2.5} dot={false} name="Churn %" />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
@@ -150,9 +150,9 @@ export function DashboardPage() {
                       <Line
                         type="monotone"
                         dataKey="saldo"
-                        stroke="#246bff"
+                        stroke="var(--primary-color)"
                         strokeWidth={2.5}
-                        dot={{ r: 3, fill: "#246bff" }}
+                        dot={{ r: 3, fill: "var(--primary-color)" }}
                         name="Saldo"
                       />
                     </LineChart>

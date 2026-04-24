@@ -97,7 +97,7 @@ function SaidasContent({ data }: { data: { saidas_por_mes: ExitItem[] | any[] } 
         <SummaryCard title="Detalhamento" description="Escolha o mês e o ano para ver apenas a lista daquele período.">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-2">
-              <span className="text-xs uppercase tracking-[0.18em] text-slate-400">Ano</span>
+              <span className="theme-muted text-xs uppercase tracking-[0.18em]">Ano</span>
               <select
                 value={selectedYear}
                 onChange={(event) => setSelectedYear(event.target.value)}
@@ -112,7 +112,7 @@ function SaidasContent({ data }: { data: { saidas_por_mes: ExitItem[] | any[] } 
             </label>
 
             <label className="space-y-2">
-              <span className="text-xs uppercase tracking-[0.18em] text-slate-400">Mês</span>
+              <span className="theme-muted text-xs uppercase tracking-[0.18em]">Mês</span>
               <select
                 value={selectedMonth}
                 onChange={(event) => setSelectedMonth(event.target.value)}

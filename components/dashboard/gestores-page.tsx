@@ -3,7 +3,7 @@
 import { Activity } from "lucide-react";
 import { DashboardDataPage } from "@/components/dashboard/dashboard-shell";
 import {
-  GestorRadarCard,
+  GestorPerformanceChart,
   GestorStatusCard,
   InsightChip,
   SummaryCard
@@ -38,7 +38,7 @@ export function GestoresPage() {
 
             <div className="grid gap-4 2xl:grid-cols-2">
               <GestorStatusCard gestores={gestores} />
-              <GestorRadarCard gestores={gestores} />
+              <GestorPerformanceChart gestores={gestores} />
             </div>
 
             <Card className="p-6">
@@ -80,10 +80,10 @@ export function GestoresPage() {
                             width: `${Math.max(gestor.taxa_sucesso, 4)}%`,
                             background:
                               tone === "green"
-                                ? "linear-gradient(90deg, #22c55e, rgba(255,255,255,0.85))"
+                                ? "linear-gradient(90deg, var(--success-color), rgba(255,255,255,0.85))"
                                 : tone === "yellow"
-                                  ? "linear-gradient(90deg, #f59e0b, rgba(255,255,255,0.85))"
-                                  : "linear-gradient(90deg, #ef4444, rgba(255,255,255,0.85))"
+                                  ? "linear-gradient(90deg, var(--warning-color), rgba(255,255,255,0.85))"
+                                  : "linear-gradient(90deg, var(--danger-color), rgba(255,255,255,0.85))"
                           }}
                         />
                       </div>

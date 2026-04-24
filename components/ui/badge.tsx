@@ -8,7 +8,7 @@ const toneClasses: Record<BadgeTone, string> = {
   green: "bg-success/16 text-success",
   yellow: "bg-warning/16 text-warning",
   red: "bg-danger/16 text-danger",
-  gray: "bg-slate-500/12 text-slate-300"
+  gray: "theme-soft-surface theme-muted"
 };
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {

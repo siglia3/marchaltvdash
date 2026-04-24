@@ -13,8 +13,26 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body>{children}</body>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem("marcha-theme");
+                  var preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+                  var theme = saved === "light" || saved === "dark" ? saved : preferred;
+                  document.documentElement.setAttribute("data-theme", theme);
+                } catch (e) {
+                  document.documentElement.setAttribute("data-theme", "dark");
+                }
+              })();
+            `
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }
