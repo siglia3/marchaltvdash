@@ -142,7 +142,7 @@ export function CustomTooltip({
   const tooltipLabel = payload[0]?.payload?.tooltipLabel ?? label;
 
   return (
-    <div className="theme-surface rounded-[18px] border p-3 shadow-panel">
+    <div className="theme-surface rounded-[18px] border p-3">
       <p className="theme-text mb-2 text-sm font-semibold">{tooltipLabel}</p>
       <div className="space-y-1.5">
         {payload.map((item) => (
@@ -184,9 +184,23 @@ export function InsightChip({
   } as const;
 
   return (
-    <div className={cn("rounded-[18px] border p-4", toneClasses[tone])}>
-      <p className="theme-muted text-[11px] uppercase tracking-[0.2em]">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-inherit">{value}</p>
+    <div className={cn("rounded-[22px] border px-5 py-5 min-h-[124px] flex flex-col justify-between", toneClasses[tone])}>
+      <p
+        className={cn(
+          "text-[15px] font-semibold leading-6",
+          tone === "default" || tone === "blue" ? "theme-text" : "text-inherit"
+        )}
+      >
+        {label}
+      </p>
+      <p
+        className={cn(
+          "mt-6 text-[1.8rem] font-semibold tracking-[-0.03em]",
+          tone === "default" || tone === "blue" ? "theme-text" : "text-inherit"
+        )}
+      >
+        {value}
+      </p>
     </div>
   );
 }
