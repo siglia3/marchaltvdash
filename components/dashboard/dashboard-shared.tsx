@@ -3,7 +3,6 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
-  Area,
   Bar,
   BarChart,
   CartesianGrid,
@@ -122,8 +121,8 @@ export function DashboardErrorState({
         <CircleAlert className="h-7 w-7" />
       </div>
       <div className="space-y-2">
-        <h2 className="text-xl font-semibold text-slate-50">Falha ao carregar o dashboard</h2>
-        <p className="max-w-xl text-sm leading-6 text-slate-300">{message}</p>
+        <h2 className="text-xl font-semibold text-slate-900">Falha ao carregar o dashboard</h2>
+        <p className="max-w-xl text-sm leading-6 text-slate-500">{message}</p>
       </div>
       <Button onClick={onRetry}>Tentar novamente</Button>
     </Card>
@@ -142,19 +141,19 @@ export function CustomTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-[18px] border border-white/15 bg-slate-950/80 p-3 shadow-2xl backdrop-blur-xl">
-      <p className="mb-2 text-sm font-semibold text-slate-50">{label}</p>
+    <div className="rounded-[18px] border border-slate-200 bg-white p-3 shadow-panel">
+      <p className="mb-2 text-sm font-semibold text-slate-900">{label}</p>
       <div className="space-y-1.5">
         {payload.map((item) => (
           <div key={`${item.name}-${item.value}`} className="flex items-center justify-between gap-8 text-xs">
-            <span className="flex items-center gap-2 text-slate-300">
+            <span className="flex items-center gap-2 text-slate-500">
               <span
                 className="h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: item.color ?? "#93c5fd" }}
               />
               {item.name}
             </span>
-            <span className="font-semibold text-slate-100">
+            <span className="font-semibold text-slate-900">
               {item.name.toLowerCase().includes("churn") || item.name.includes("%")
                 ? formatPercent(item.value)
                 : item.value}
@@ -176,11 +175,11 @@ export function InsightChip({
   tone?: "default" | "blue" | "green" | "yellow" | "red";
 }) {
   const toneClasses = {
-    default: "border-white/10 bg-white/[0.04] text-slate-100",
-    blue: "border-sky-300/20 bg-sky-400/10 text-sky-100",
-    green: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
-    yellow: "border-amber-300/20 bg-amber-400/10 text-amber-100",
-    red: "border-rose-300/20 bg-rose-400/10 text-rose-100"
+    default: "border-slate-200 bg-white text-slate-900",
+    blue: "border-blue-100 bg-blue-50 text-slate-900",
+    green: "border-emerald-100 bg-emerald-50 text-slate-900",
+    yellow: "border-amber-100 bg-amber-50 text-slate-900",
+    red: "border-rose-100 bg-rose-50 text-slate-900"
   } as const;
 
   return (
@@ -207,10 +206,10 @@ export function MetricCard({
   tone: keyof typeof healthGradient;
 }) {
   const toneClasses = {
-    blue: "text-sky-300",
-    green: "text-emerald-300",
-    yellow: "text-amber-300",
-    red: "text-rose-300"
+    blue: "text-primary",
+    green: "text-success",
+    yellow: "text-warning",
+    red: "text-danger"
   } as const;
 
   const badgeTone = {
@@ -222,19 +221,19 @@ export function MetricCard({
 
   return (
     <Card className="relative overflow-hidden p-5">
-      <div className={cn("absolute inset-0 bg-gradient-to-br opacity-80", healthGradient[tone])} />
+      <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50", healthGradient[tone])} />
       <div className="relative">
         <CardHeader>
           <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-300">{title}</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">{title}</p>
           </div>
-          <div className="rounded-full border border-white/10 bg-white/10 p-2 text-slate-100">
+          <div className="rounded-full border border-slate-200 bg-slate-50 p-2 text-slate-700">
             <Icon className="h-4 w-4" />
           </div>
         </CardHeader>
         <CardContent className="mt-6 space-y-3">
           <div className={cn("metric-number font-bold", toneClasses[tone])}>{value}</div>
-          <p className="max-w-[18rem] text-sm text-slate-300">{description}</p>
+          <p className="max-w-[18rem] text-sm text-slate-500">{description}</p>
           <Badge tone={badgeTone[tone]} className="w-fit">
             <ArrowUpRight className="h-3 w-3" />
             {badge}
@@ -274,13 +273,13 @@ export function HealthDonut({
       </div>
       <div className="space-y-3">
         {data.map((item) => (
-          <div key={item.name} className="rounded-[18px] border border-white/10 bg-white/[0.04] p-3">
+          <div key={item.name} className="rounded-[18px] border border-slate-200 bg-slate-50 p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-sm font-medium text-slate-100">{item.name}</span>
+                <span className="text-sm font-medium text-slate-900">{item.name}</span>
               </div>
-              <span className="text-sm text-slate-300">{item.value}</span>
+              <span className="text-sm text-slate-500">{item.value}</span>
             </div>
           </div>
         ))}
@@ -302,7 +301,7 @@ export function GestorStatusCard({ gestores }: { gestores: GestorMetric[] }) {
       <CardHeader>
         <div>
           <CardTitle>Distribuição de status</CardTitle>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm text-slate-500">
             Mostra quantos clientes estão bem, em atenção e em risco por gestor.
           </p>
         </div>
@@ -319,7 +318,7 @@ export function GestorStatusCard({ gestores }: { gestores: GestorMetric[] }) {
                 width={88}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: "#e2e8f0", fontSize: 12 }}
+                tick={{ fill: "#475569", fontSize: 12 }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
@@ -353,7 +352,7 @@ export function GestorRadarCard({ gestores }: { gestores: GestorMetric[] }) {
       <CardHeader>
         <div>
           <CardTitle>Mapa de performance</CardTitle>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm text-slate-500">
             Compara taxa de sucesso, retenção relativa e estabilidade da carteira.
           </p>
         </div>
@@ -362,8 +361,8 @@ export function GestorRadarCard({ gestores }: { gestores: GestorMetric[] }) {
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart outerRadius="68%" data={radarData}>
-              <PolarGrid stroke="rgba(255,255,255,0.08)" />
-              <PolarAngleAxis dataKey="gestor" tick={{ fill: "#cbd5e1", fontSize: 12 }} />
+              <PolarGrid stroke="#e5eaf3" />
+              <PolarAngleAxis dataKey="gestor" tick={{ fill: "#475569", fontSize: 12 }} />
               <Tooltip content={<CustomTooltip />} />
               <Radar dataKey="Taxa de sucesso" fill="#38bdf8" stroke="#38bdf8" fillOpacity={0.25} />
               <Radar dataKey="Retenção relativa" fill="#34d399" stroke="#34d399" fillOpacity={0.2} />
@@ -419,13 +418,13 @@ export function EvolucaoTable({
       <CardHeader>
         <div>
           <CardTitle>Detalhamento mensal</CardTitle>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm text-slate-500">
             Mostra base, entradas, saídas e churn mês a mês.
           </p>
         </div>
       </CardHeader>
       <CardContent className="mt-5 space-y-4">
-        <div className="overflow-hidden rounded-[18px] border border-white/10 bg-slate-950/20">
+        <div className="overflow-hidden rounded-[18px] border border-slate-200 bg-white">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -439,10 +438,10 @@ export function EvolucaoTable({
             <TableBody>
               {data.evolucao_mensal.map((row) => (
                 <TableRow key={row.mes}>
-                  <TableCell className="font-medium text-slate-100">{row.mes}</TableCell>
+                  <TableCell className="font-medium text-slate-900">{row.mes}</TableCell>
                   <TableCell>{row.base_inicio}</TableCell>
-                  <TableCell className="text-emerald-300">{row.entradas ?? "—"}</TableCell>
-                  <TableCell className="text-rose-300">-{row.saidas}</TableCell>
+                  <TableCell className="text-emerald-600">{row.entradas ?? "—"}</TableCell>
+                  <TableCell className="text-rose-600">-{row.saidas}</TableCell>
                   <TableCell className="text-right">
                     {row.parcial ? (
                       <Badge tone="gray">Em aberto</Badge>
@@ -452,12 +451,12 @@ export function EvolucaoTable({
                   </TableCell>
                 </TableRow>
               ))}
-              <TableRow className="bg-white/[0.04] hover:bg-white/[0.04]">
-                <TableCell className="font-semibold text-white">Média</TableCell>
-                <TableCell colSpan={3} className="text-slate-300">
+              <TableRow className="bg-slate-50 hover:bg-slate-50">
+                <TableCell className="font-semibold text-slate-900">Média</TableCell>
+                <TableCell colSpan={3} className="text-slate-500">
                   Apenas meses fechados
                 </TableCell>
-                <TableCell className="text-right font-semibold text-white">
+                <TableCell className="text-right font-semibold text-slate-900">
                   {formatPercent(
                     completed.reduce((acc, item) => acc + (item.churn ?? 0), 0) /
                       Math.max(completed.length, 1)
@@ -487,7 +486,7 @@ export function SummaryCard({
       <CardHeader>
         <div>
           <CardTitle>{title}</CardTitle>
-          {description ? <p className="mt-1 text-sm text-slate-300">{description}</p> : null}
+          {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
         </div>
       </CardHeader>
       <CardContent className="mt-5">{children}</CardContent>

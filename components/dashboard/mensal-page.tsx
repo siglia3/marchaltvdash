@@ -63,12 +63,12 @@ export function MensalPage() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                      <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
                       <YAxis
                         yAxisId="left"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: "#94a3b8", fontSize: 12 }}
+                        tick={{ fill: "#64748b", fontSize: 12 }}
                         tickFormatter={(value) => `${value}%`}
                       />
                       <YAxis
@@ -76,7 +76,7 @@ export function MensalPage() {
                         orientation="right"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: "#94a3b8", fontSize: 12 }}
+                        tick={{ fill: "#64748b", fontSize: 12 }}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Area
@@ -85,7 +85,7 @@ export function MensalPage() {
                         dataKey="base_inicio"
                         name="Base"
                         fill="url(#monthlyBase)"
-                        stroke="#38bdf8"
+                        stroke="#246bff"
                         strokeWidth={2}
                       />
                       <Line
@@ -107,16 +107,16 @@ export function MensalPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={saldoData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
                       <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                      <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                      <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
                       <Tooltip content={<CustomTooltip />} />
                       <Line
                         type="monotone"
                         dataKey="saldo"
                         name="Saldo"
-                        stroke="#22c55e"
+                        stroke="#246bff"
                         strokeWidth={3}
-                        dot={{ r: 3, fill: "#22c55e" }}
+                        dot={{ r: 3, fill: "#246bff" }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -127,9 +127,9 @@ export function MensalPage() {
             <EvolucaoTable
               data={data}
               footer={
-                <div className="rounded-[18px] border border-sky-300/15 bg-sky-400/10 p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-sky-200">Leitura rápida</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-100">
+                <div className="rounded-[18px] border border-blue-100 bg-blue-50 p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-primary">Leitura rápida</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">
                     {getSimpleMonthlyInsight(data.evolucao_mensal)}
                   </p>
                 </div>

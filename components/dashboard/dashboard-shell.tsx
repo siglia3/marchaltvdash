@@ -43,15 +43,11 @@ export function DashboardShell({
   const pathname = usePathname();
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-slate-50">
-      <div className="glass-orb left-[-6rem] top-[6rem] h-72 w-72 bg-sky-400/35" />
-      <div className="glass-orb right-[-4rem] top-[20rem] h-80 w-80 bg-teal-400/20" />
-      <div className="glass-orb bottom-[-8rem] left-[22%] h-72 w-72 bg-blue-500/18" />
-
-      <div className="relative z-10 mx-auto flex max-w-[1880px] flex-col md:flex-row">
-        <aside className="border-b border-white/10 bg-slate-950/35 px-5 py-6 backdrop-blur-2xl md:sticky md:top-0 md:h-screen md:w-[290px] md:border-b-0 md:border-r">
+    <div className="min-h-screen bg-background text-slate-900">
+      <div className="flex min-h-screen flex-col md:flex-row">
+        <aside className="border-b border-slate-200 bg-sidebar md:sticky md:top-0 md:h-screen md:w-[280px] md:border-b-0 md:border-r">
           <div className="flex h-full flex-col">
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.06] px-5 py-5 shadow-2xl shadow-sky-950/20">
+            <div className="border-b border-slate-200 px-6 py-6">
               <Image
                 src="/logomarcha.png"
                 alt="Marcha Ads"
@@ -62,7 +58,7 @@ export function DashboardShell({
               />
             </div>
 
-            <nav className="mt-8 space-y-2">
+            <nav className="space-y-1 px-4 py-6">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
@@ -72,16 +68,16 @@ export function DashboardShell({
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "group flex w-full items-center gap-3 rounded-[18px] border px-4 py-3 text-left transition duration-300",
+                      "group flex w-full items-center gap-3 rounded-[14px] px-4 py-3 text-left transition duration-200",
                       isActive
-                        ? "border-sky-300/25 bg-sky-300/14 text-white shadow-lg shadow-sky-950/25"
-                        : "border-white/8 bg-white/[0.03] text-slate-300 hover:border-white/14 hover:bg-white/[0.06]"
+                        ? "bg-blue-50 text-primary"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     )}
                   >
                     <div
                       className={cn(
-                        "rounded-full border p-2 transition",
-                        isActive ? "border-sky-200/30 bg-sky-300/18 text-sky-200" : "border-white/10 bg-white/[0.04]"
+                        "rounded-full p-2 transition",
+                        isActive ? "bg-white text-primary shadow-sm" : "bg-slate-100 text-slate-500"
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -92,14 +88,14 @@ export function DashboardShell({
               })}
             </nav>
 
-            <div className="mt-auto rounded-[22px] border border-white/10 bg-white/[0.04] p-4">
+            <div className="mt-auto border-t border-slate-200 px-6 py-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-sky-300/12 text-sm font-bold text-sky-200">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-sm font-bold text-primary">
                   MD
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-100">Marcha Digital</p>
-                  <p className="text-xs text-slate-400">Agência de Tráfego Pago</p>
+                  <p className="text-sm font-semibold text-slate-900">Marcha Digital</p>
+                  <p className="text-xs text-slate-500">Agência de Tráfego Pago</p>
                 </div>
               </div>
             </div>
@@ -107,19 +103,20 @@ export function DashboardShell({
         </aside>
 
         <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
-          <header className="mb-6 rounded-[28px] border border-white/10 bg-slate-950/25 px-6 py-5 shadow-2xl shadow-slate-950/20 backdrop-blur-2xl">
+          <div className="mx-auto w-full max-w-[1380px]">
+          <header className="mb-6 rounded-[24px] border border-slate-200 bg-white px-6 py-5 shadow-panel">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-3xl">
-                <p className="text-xs uppercase tracking-[0.22em] text-sky-200/80">Dashboard / Saúde de Clientes</p>
-                <h1 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-white sm:text-4xl">{title}</h1>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">{description}</p>
+                <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Dashboard / Saúde de Clientes</p>
+                <h1 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-slate-900 sm:text-4xl">{title}</h1>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">{description}</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <div className="rounded-[18px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300">
-                  Última atualização: <span className="font-semibold text-white">{updatedAt ?? "—"}</span>
+                <div className="rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                  Última atualização: <span className="font-semibold text-slate-900">{updatedAt ?? "—"}</span>
                 </div>
-                <Button className="rounded-[18px] bg-sky-400 text-slate-950 hover:bg-sky-300" onClick={onRefresh}>
+                <Button className="rounded-[16px] bg-primary text-white hover:bg-blue-600" onClick={onRefresh}>
                   <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
                   Atualizar
                 </Button>
@@ -139,8 +136,8 @@ export function DashboardShell({
                   className={cn(
                     "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-sm transition",
                     isActive
-                      ? "border-sky-300/25 bg-sky-300/14 text-white"
-                      : "border-white/10 bg-white/[0.04] text-slate-300"
+                      ? "border-blue-100 bg-blue-50 text-primary"
+                      : "border-slate-200 bg-white text-slate-600"
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -151,6 +148,7 @@ export function DashboardShell({
           </div>
 
           {children}
+          </div>
         </main>
       </div>
     </div>

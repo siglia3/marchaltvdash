@@ -45,12 +45,12 @@ export function GestoresPage() {
               <CardHeader>
                 <div>
                   <CardTitle>Resumo por gestor</CardTitle>
-                  <p className="mt-1 text-sm text-slate-300">
+                  <p className="mt-1 text-sm text-slate-500">
                     Ranking com taxa de sucesso e LTV médio de cada carteira.
                   </p>
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs uppercase tracking-[0.18em] text-slate-300">
-                  <Activity className="h-3.5 w-3.5 text-sky-200" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs uppercase tracking-[0.18em] text-slate-500">
+                  <Activity className="h-3.5 w-3.5 text-primary" />
                   {gestores.length} gestores
                 </div>
               </CardHeader>
@@ -60,20 +60,20 @@ export function GestoresPage() {
                     gestor.taxa_sucesso >= 65 ? "green" : gestor.taxa_sucesso >= 45 ? "yellow" : "red";
 
                   return (
-                    <div key={gestor.nome} className="rounded-[22px] border border-white/10 bg-white/[0.04] p-4">
+                    <div key={gestor.nome} className="rounded-[22px] border border-slate-200 bg-slate-50 p-4">
                       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-sm font-semibold text-white">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-900">
                             {String(index + 1).padStart(2, "0")}
                           </div>
                           <div>
-                            <p className="text-base font-semibold text-white">{gestor.nome}</p>
-                            <p className="text-sm text-slate-400">{formatMonths(gestor.ltv_medio)} meses de LTV médio</p>
+                            <p className="text-base font-semibold text-slate-900">{gestor.nome}</p>
+                            <p className="text-sm text-slate-500">{formatMonths(gestor.ltv_medio)} meses de LTV médio</p>
                           </div>
                         </div>
                         <Badge tone={tone}>{formatPercent(gestor.taxa_sucesso)}</Badge>
                       </div>
-                      <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-950/40">
+                      <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-200">
                         <div
                           className="h-full rounded-full transition-all"
                           style={{

@@ -10,18 +10,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0d0f14",
-        panel: "#161a23",
-        sidebar: "#111318",
-        muted: "#8b92a5",
-        stroke: "#1e2333",
-        primary: "#3b82f6",
-        success: "#22c55e",
-        warning: "#f59e0b",
-        danger: "#ef4444"
+        background: "#f5f7fb",
+        panel: "#ffffff",
+        sidebar: "#ffffff",
+        muted: "#6b7280",
+        stroke: "#e5eaf3",
+        primary: "#246bff",
+        success: "#16a34a",
+        warning: "#d97706",
+        danger: "#dc2626"
       },
       boxShadow: {
-        panel: "0 16px 40px rgba(3, 8, 20, 0.28)"
+        panel: "0 16px 40px rgba(15, 23, 42, 0.06)"
       },
       borderRadius: {
         panel: "16px",

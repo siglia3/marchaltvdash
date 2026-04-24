@@ -101,10 +101,10 @@ function SaidasContent({ data }: { data: { saidas_por_mes: ExitItem[] | any[] } 
               <select
                 value={selectedYear}
                 onChange={(event) => setSelectedYear(event.target.value)}
-                className="h-11 w-full rounded-[14px] border border-white/5 bg-white/[0.03] px-4 text-sm text-slate-100 outline-none transition focus:border-primary/60 focus:bg-white/[0.05]"
+                className="h-11 w-full rounded-[14px] border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-primary/60 focus:bg-white"
               >
                 {years.map((year) => (
-                  <option key={year} value={year} className="bg-slate-950">
+                  <option key={year} value={year} className="bg-white">
                     {year}
                   </option>
                 ))}
@@ -116,10 +116,10 @@ function SaidasContent({ data }: { data: { saidas_por_mes: ExitItem[] | any[] } 
               <select
                 value={selectedMonth}
                 onChange={(event) => setSelectedMonth(event.target.value)}
-                className="h-11 w-full rounded-[14px] border border-white/5 bg-white/[0.03] px-4 text-sm text-slate-100 outline-none transition focus:border-primary/60 focus:bg-white/[0.05]"
+                className="h-11 w-full rounded-[14px] border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-primary/60 focus:bg-white"
               >
                 {monthsForYear.map((item) => (
-                  <option key={item.key} value={item.mes} className="bg-slate-950">
+                  <option key={item.key} value={item.mes} className="bg-white">
                     {item.mes}
                   </option>
                 ))}
@@ -129,10 +129,10 @@ function SaidasContent({ data }: { data: { saidas_por_mes: ExitItem[] | any[] } 
 
           {selectedExit ? (
             <div className="mt-6 space-y-4">
-              <div className="flex flex-col gap-3 rounded-[20px] border border-white/10 bg-white/[0.04] p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 rounded-[20px] border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-lg font-semibold text-white">{selectedExit.label}</p>
-                  <p className="text-sm text-slate-400">{selectedExit.clientes.length} saídas registradas</p>
+                  <p className="text-lg font-semibold text-slate-900">{selectedExit.label}</p>
+                  <p className="text-sm text-slate-500">{selectedExit.clientes.length} saídas registradas</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {selectedExit.parcial ? <Badge tone="gray">Em aberto</Badge> : null}
@@ -146,7 +146,7 @@ function SaidasContent({ data }: { data: { saidas_por_mes: ExitItem[] | any[] } 
                 {selectedExit.clientes.map((cliente) => (
                   <span
                     key={`${selectedExit.key}-${cliente}`}
-                    className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-slate-100"
+                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
                   >
                     {cliente}
                   </span>
@@ -154,7 +154,7 @@ function SaidasContent({ data }: { data: { saidas_por_mes: ExitItem[] | any[] } 
               </div>
             </div>
           ) : (
-            <div className="mt-6 rounded-[18px] border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+            <div className="mt-6 rounded-[18px] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
               Nenhum detalhe encontrado para o filtro atual.
             </div>
           )}
