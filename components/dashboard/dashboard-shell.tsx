@@ -78,14 +78,14 @@ export function DashboardShell({
                     className={cn(
                       "group flex w-full items-center gap-3 rounded-[14px] px-4 py-3 text-left transition duration-200",
                       isActive
-                        ? "theme-nav-active text-primary"
+                        ? "bg-primary text-white shadow-sm"
                         : "theme-muted hover:bg-[var(--nav-hover)] hover:text-[var(--text-color)]"
                     )}
                   >
                     <div
                       className={cn(
                         "rounded-full p-2 transition",
-                        isActive ? "theme-surface text-primary shadow-sm" : "theme-icon-surface theme-muted"
+                        isActive ? "bg-white/15 text-white" : "theme-icon-surface theme-muted"
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -163,7 +163,7 @@ export function DashboardShell({
                   className={cn(
                     "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-sm transition",
                     isActive
-                      ? "theme-nav-active theme-border text-primary"
+                      ? "border-primary bg-primary text-white"
                       : "theme-surface theme-muted"
                   )}
                 >

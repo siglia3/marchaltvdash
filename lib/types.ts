@@ -23,6 +23,16 @@ export type SaidasPorMes = {
   clientes: string[];
 };
 
+export type ClienteDetalhado = {
+  nome: string;
+  gestor: string;
+  origem: string | null;
+  status: "bom" | "alerta" | "critico";
+  status_label: string;
+  data_inicio: string | null;
+  ltv_meses: number | null;
+};
+
 export type ClientesDashboardData = {
   atualizado_em: string;
   clientes_ativos: number;
@@ -40,4 +50,5 @@ export type ClientesDashboardData = {
   por_gestor: GestorMetric[];
   evolucao_mensal: EvolucaoMensal[];
   saidas_por_mes: SaidasPorMes[];
+  clientes_detalhados?: ClienteDetalhado[];
 };

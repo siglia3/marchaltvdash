@@ -89,7 +89,8 @@ function buildDashboardPayload_() {
         parcial: item.parcial
       };
     }),
-    saidas_por_mes: buildSaidasPorMes_(saidas, churnLookup, evolucaoMensal)
+    saidas_por_mes: buildSaidasPorMes_(saidas, churnLookup, evolucaoMensal),
+    clientes_detalhados: buildClientesDetalhados_(clientesAtivosValidos, hoje)
   };
 }
 
@@ -240,6 +241,34 @@ function buildSaidasPorMes_(rows, churnLookup, evolucaoMensal) {
     });
 }
 
+function buildClientesDetalhados_(rows, hoje) {
+  return rows
+    .map(function (row) {
+      var status = normalizeSaude_(row["Saúde cliente"]);
+      var nome = normalizeDisplayText_(row["CLIENTES"]);
+
+      if (!nome || !status) return null;
+
+      return {
+        nome: nome,
+        gestor: normalizeDisplayText_(row["GESTOR"]) || "Sem gestor",
+        origem: normalizeDisplayText_(row["ORIGEM"]) || null,
+        status: status,
+        status_label: statusLabel_(status),
+        data_inicio: formatDateForPayload_(parseDate_(row["DATA PLANEJAMENTO"])),
+        ltv_meses: resolveLtvMeses_(row, hoje)
+      };
+    })
+    .filter(Boolean)
+    .sort(function (a, b) {
+      if (a.status === b.status) {
+        return a.nome.localeCompare(b.nome);
+      }
+
+      return a.status.localeCompare(b.status);
+    });
+}
+
 function resolveLtvMeses_(row, hoje) {
   var periodo = row["PERÍODO"];
   if (periodo !== "" && periodo !== null && periodo !== undefined) {
@@ -304,6 +333,13 @@ function normalizeDisplayText_(value) {
   return String(value || "").trim();
 }
 
+function statusLabel_(value) {
+  if (value === "bom") return "Bom";
+  if (value === "alerta") return "Precisa de Atenção";
+  if (value === "critico") return "Situação Crítica";
+  return "";
+}
+
 function parseDate_(value) {
   if (!value) return null;
   if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
@@ -318,6 +354,11 @@ function parseDate_(value) {
 
   var parsed = new Date(text);
   return isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatDateForPayload_(date) {
+  if (!date) return null;
+  return Utilities.formatDate(date, Session.getScriptTimeZone(), "dd/MM/yyyy");
 }
 
 function parseBoolean_(value) {

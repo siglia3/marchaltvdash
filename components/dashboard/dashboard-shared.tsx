@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
+import type { Route } from "next";
 import type { LucideIcon } from "lucide-react";
 import {
   Bar,
@@ -133,14 +135,15 @@ export function CustomTooltip({
   label
 }: {
   active?: boolean;
-  payload?: Array<{ name: string; value: number; color?: string }>;
+  payload?: Array<{ name: string; value: number; color?: string; payload?: { tooltipLabel?: string } }>;
   label?: string;
 }) {
   if (!active || !payload?.length) return null;
+  const tooltipLabel = payload[0]?.payload?.tooltipLabel ?? label;
 
   return (
     <div className="theme-surface rounded-[18px] border p-3 shadow-panel">
-      <p className="theme-text mb-2 text-sm font-semibold">{label}</p>
+      <p className="theme-text mb-2 text-sm font-semibold">{tooltipLabel}</p>
       <div className="space-y-1.5">
         {payload.map((item) => (
           <div key={`${item.name}-${item.value}`} className="flex items-center justify-between gap-8 text-xs">
@@ -194,7 +197,8 @@ export function MetricCard({
   description,
   badge,
   icon: Icon,
-  tone
+  tone,
+  href
 }: {
   title: string;
   value: number;
@@ -202,6 +206,7 @@ export function MetricCard({
   badge: string;
   icon: LucideIcon;
   tone: keyof typeof healthGradient;
+  href?: Route;
 }) {
   const toneClasses = {
     blue: "text-primary",
@@ -217,8 +222,13 @@ export function MetricCard({
     red: "red"
   } as const;
 
-  return (
-    <Card className="relative overflow-hidden p-5">
+  const card = (
+    <Card
+      className={cn(
+        "relative overflow-hidden p-5 transition duration-200",
+        href ? "hover:-translate-y-0.5 hover:shadow-panel" : ""
+      )}
+    >
       <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50", healthGradient[tone])} />
       <div className="relative">
         <CardHeader>
@@ -239,6 +249,16 @@ export function MetricCard({
         </CardContent>
       </div>
     </Card>
+  );
+
+  if (!href) {
+    return card;
+  }
+
+  return (
+    <Link href={href} className="block focus-visible:outline-none">
+      {card}
+    </Link>
   );
 }
 
@@ -397,8 +417,9 @@ export function GestorPerformanceChart({ gestores }: { gestores: GestorMetric[] 
 }
 
 export function MonthExitBar({ data }: { data: SaidasPorMes[] }) {
-  const monthData = data.map((item) => ({
+  const monthData = data.slice(-12).map((item) => ({
     mes: shortMonthLabel(item.mes),
+    tooltipLabel: item.mes,
     saidas: item.clientes.length,
     churn: item.churn ?? 0
   }));
@@ -411,10 +432,10 @@ export function MonthExitBar({ data }: { data: SaidasPorMes[] }) {
           <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
           <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="saidas" radius={[10, 10, 0, 0]}>
+          <Bar dataKey="saidas" name="Saídas" radius={[10, 10, 0, 0]}>
             {monthData.map((entry) => (
               <Cell
-                key={`${entry.mes}-${entry.saidas}`}
+                key={`${entry.tooltipLabel}-${entry.saidas}`}
                 fill={
                   entry.churn > 12
                     ? "var(--danger-color)"

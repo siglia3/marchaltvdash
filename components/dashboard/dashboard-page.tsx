@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import { AlertTriangle, ShieldAlert, ShieldCheck, Users } from "lucide-react";
 import {
   Area,
@@ -79,6 +80,7 @@ export function DashboardPage() {
                 badge={`${formatSignedPercent(data.variacao_base)} vs. referência`}
                 icon={Users}
                 tone="blue"
+                href={"/clientes/ativos" as Route}
               />
               <MetricCard
                 title="Clientes bons"
@@ -87,6 +89,7 @@ export function DashboardPage() {
                 badge={`${formatPercent(data.perc_bons)} da base`}
                 icon={ShieldCheck}
                 tone="green"
+                href={"/clientes/bons" as Route}
               />
               <MetricCard
                 title="Sinal de alerta"
@@ -95,6 +98,7 @@ export function DashboardPage() {
                 badge={`${formatPercent(data.perc_alerta)} da base`}
                 icon={AlertTriangle}
                 tone="yellow"
+                href={"/clientes/alerta" as Route}
               />
               <MetricCard
                 title="Situação crítica"
@@ -103,6 +107,7 @@ export function DashboardPage() {
                 badge={`${formatPercent(data.perc_critico)} da base`}
                 icon={ShieldAlert}
                 tone="red"
+                href={"/clientes/critico" as Route}
               />
             </div>
 
