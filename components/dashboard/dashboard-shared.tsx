@@ -276,7 +276,7 @@ export function MetricCard({
       className={cn(
         "relative overflow-hidden p-6 transition duration-200",
         cardTone[tone],
-        href ? "hover:-translate-y-0.5 hover:border-primary/30" : ""
+        href ? "hover:-translate-y-0.5" : ""
       )}
     >
       <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50", healthGradient[tone])} />
@@ -318,40 +318,56 @@ export function HealthDonut({
 }: {
   data: Array<{ name: string; value: number; color: string }>;
 }) {
+  const total = data.reduce((acc, item) => acc + item.value, 0);
+
   return (
-    <div className="grid gap-3 sm:grid-cols-[180px_1fr] sm:items-center">
-      <div className="mx-auto h-[180px] w-[180px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              innerRadius={54}
-              outerRadius={76}
-              stroke="transparent"
-              paddingAngle={3}
-            >
-              {data.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="space-y-3">
-        {data.map((item) => (
-          <div key={item.name} className="theme-soft-surface rounded-[18px] border p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="theme-text text-sm font-medium">{item.name}</span>
-              </div>
-              <span className="theme-muted text-sm">{item.value}</span>
-            </div>
+    <div className="theme-soft-surface rounded-[24px] border p-5">
+      <p className="theme-muted text-[11px] uppercase tracking-[0.2em]">Status da carteira</p>
+      <div className="mt-4 grid gap-4 lg:grid-cols-[220px_1fr] lg:items-center">
+        <div className="relative mx-auto h-[220px] w-[220px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="value"
+                nameKey="name"
+                innerRadius={62}
+                outerRadius={92}
+                stroke="transparent"
+                paddingAngle={3}
+              >
+                {data.map((entry) => (
+                  <Cell key={entry.name} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+            <p className="theme-text text-5xl font-semibold tracking-[-0.05em]">{total}</p>
+            <p className="theme-muted mt-1 text-xs uppercase tracking-[0.18em]">clientes ativos</p>
           </div>
-        ))}
+        </div>
+
+        <div className="space-y-3">
+          {data.map((item) => (
+            <div key={item.name} className="theme-surface rounded-[18px] border px-4 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="theme-text truncate text-base font-semibold">{item.name}</span>
+                </div>
+                <span className="theme-text text-2xl font-semibold tracking-[-0.04em]">{item.value}</span>
+              </div>
+              <div className="theme-border mt-4 h-2 overflow-hidden rounded-full border bg-[var(--surface-soft)]">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${total ? (item.value / total) * 100 : 0}%`, backgroundColor: item.color }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
