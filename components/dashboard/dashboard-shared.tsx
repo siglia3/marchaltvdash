@@ -402,7 +402,7 @@ export function OrigemMixCard({
           }
         ]);
 
-  var ringPalette = [
+  var segmentPalette = [
     "var(--origin-ring-1)",
     "var(--origin-ring-2)",
     "var(--origin-ring-3)",
@@ -413,65 +413,110 @@ export function OrigemMixCard({
       name: item.name,
       value: item.value,
       percent: item.percent,
-      color: ringPalette[index] || ringPalette[ringPalette.length - 1]
+      color: segmentPalette[index] || segmentPalette[segmentPalette.length - 1]
     };
   });
 
   var total = formattedData.reduce(function (acc, item) {
     return acc + item.value;
   }, 0);
-  var baseRadius = 118;
-  var ringGap = 24;
-  var trackColor = "var(--origin-track)";
-  var startOffsetRatio = 0.18;
+  var cumulative = 0;
+  var annotatedData = formattedData.map(function (item) {
+    var center = cumulative + item.percent / 2;
+    cumulative += item.percent;
+    return {
+      name: item.name,
+      value: item.value,
+      percent: item.percent,
+      color: item.color,
+      center: Math.min(Math.max(center, 10), 90)
+    };
+  });
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="mx-auto w-full max-w-[360px] sm:max-w-[400px]">
-        <div className="relative aspect-square w-full">
-          <svg viewBox="0 0 320 320" className="h-full w-full">
-            <g transform="rotate(-210 160 160)">
-              {formattedData.map(function (item, index) {
-                var radius = baseRadius - index * ringGap;
-                var circumference = 2 * Math.PI * radius;
-                var ringLength = circumference * Math.min(Math.max(item.percent, 0), 100) / 100;
-                var dashOffset = circumference * startOffsetRatio;
+      <div className="hidden sm:block">
+        <div className="mx-auto w-full max-w-[680px]">
+          <div className="relative px-2 pt-16">
+            {annotatedData.map((item) => (
+              <div
+                key={`${item.name}-marker`}
+                className="absolute top-0 flex w-[96px] -translate-x-1/2 flex-col items-center"
+                style={{ left: `${item.center}%` }}
+              >
+                <div
+                  className="rounded-[16px] border px-3 py-1 text-sm font-semibold shadow-sm"
+                  style={{
+                    borderColor: item.color,
+                    color: item.color,
+                    backgroundColor: "var(--surface)"
+                  }}
+                >
+                  {formatPercent(item.percent)}
+                </div>
+                <div className="theme-border mt-2 h-9 w-px border-l" />
+                <span
+                  className="mt-[-2px] h-3 w-3 rounded-full border-2"
+                  style={{
+                    backgroundColor: item.color,
+                    borderColor: "var(--surface)"
+                  }}
+                />
+              </div>
+            ))}
 
-                return (
-                  <g key={item.name}>
-                    <circle
-                      cx="160"
-                      cy="160"
-                      r={radius}
-                      fill="none"
-                      stroke={trackColor}
-                      strokeWidth="16"
-                      strokeLinecap="round"
-                    />
-                    <circle
-                      cx="160"
-                      cy="160"
-                      r={radius}
-                      fill="none"
-                      stroke={item.color}
-                      strokeWidth="16"
-                      strokeLinecap="round"
-                      strokeDasharray={`${ringLength} ${circumference}`}
-                      strokeDashoffset={dashOffset}
-                    />
-                  </g>
-                );
-              })}
-            </g>
-          </svg>
-
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-            <p className="theme-text text-[clamp(2rem,4vw,3.25rem)] font-semibold tracking-[-0.06em]">
-              {total.toLocaleString("pt-BR")}
-            </p>
-            <p className="theme-muted mt-1 text-xs sm:text-sm">clientes ativos</p>
+            <div className="theme-strong-surface relative h-[92px] rounded-[30px] border px-4 py-4">
+              <div className="absolute inset-y-0 left-4 right-[116px] flex items-center gap-3">
+                {annotatedData.map((item) => (
+                  <div
+                    key={item.name}
+                    className="h-8 rounded-full"
+                    style={{
+                      flexBasis: `${item.percent}%`,
+                      flexGrow: item.value,
+                      backgroundColor: item.color,
+                      minWidth: 40
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-right">
+                <p className="theme-text text-2xl font-semibold tracking-[-0.05em]">
+                  {total.toLocaleString("pt-BR")}
+                </p>
+                <p className="theme-muted text-xs uppercase tracking-[0.18em]">clientes</p>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className="space-y-4 sm:hidden">
+        {annotatedData.map((item) => (
+          <div key={`${item.name}-mobile`} className="theme-soft-surface rounded-[20px] border p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+                  <p className="theme-text truncate text-sm font-semibold">{item.name}</p>
+                </div>
+                <p className="theme-muted mt-1 text-xs">{formatPercent(item.percent)} da base</p>
+              </div>
+              <div className="text-right">
+                <p className="theme-text text-2xl font-semibold tracking-[-0.05em]">
+                  {item.value.toLocaleString("pt-BR")}
+                </p>
+                <p className="theme-muted text-xs uppercase tracking-[0.14em]">clientes</p>
+              </div>
+            </div>
+            <div className="theme-border mt-4 h-3 overflow-hidden rounded-full border bg-[var(--origin-track)]">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${item.percent}%`, backgroundColor: item.color }}
+              />
+            </div>
+          </div>
+        ))}
       </div>
 
       <div
@@ -484,9 +529,9 @@ export function OrigemMixCard({
               : "sm:grid-cols-3"
         )}
       >
-        {formattedData.map((item) => (
-          <div key={item.name} className="min-w-0">
-            <p className="theme-text text-[clamp(1.8rem,3vw,2.8rem)] font-semibold tracking-[-0.05em]">
+        {annotatedData.map((item) => (
+          <div key={item.name} className="theme-soft-surface min-w-0 rounded-[20px] border p-4">
+            <p className="theme-text text-[clamp(1.8rem,3vw,2.6rem)] font-semibold tracking-[-0.05em]">
               {item.value.toLocaleString("pt-BR")}
             </p>
             <div className="mt-2 flex items-start gap-2">
