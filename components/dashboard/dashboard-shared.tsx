@@ -432,69 +432,109 @@ export function OrigemMixCard({
   }, 0);
   var cumulative = 0;
   var annotatedData = formattedData.map(function (item) {
-    var center = cumulative + item.percent / 2;
+    var start = cumulative;
     cumulative += item.percent;
     return {
       name: item.name,
       value: item.value,
       percent: item.percent,
       color: item.color,
-      center: Math.min(Math.max(center, 10), 90)
+      start: start,
+      end: cumulative
     };
   });
 
   return (
     <div className="flex flex-col gap-8">
       <div className="hidden sm:block">
-        <div className="mx-auto w-full max-w-[680px]">
-          <div className="relative px-2 pt-16">
-            {annotatedData.map((item) => (
-              <div
-                key={`${item.name}-marker`}
-                className="absolute top-0 flex w-[96px] -translate-x-1/2 flex-col items-center"
-                style={{ left: `${item.center}%` }}
-              >
-                <div
-                  className="rounded-[16px] border px-3 py-1 text-sm font-semibold shadow-sm"
-                  style={{
-                    borderColor: item.color,
-                    color: item.color,
-                    backgroundColor: "var(--surface)"
-                  }}
-                >
-                  {formatPercent(item.percent)}
-                </div>
-                <div className="theme-border mt-2 h-9 w-px border-l" />
-                <span
-                  className="mt-[-2px] h-3 w-3 rounded-full border-2"
-                  style={{
-                    backgroundColor: item.color,
-                    borderColor: "var(--surface)"
-                  }}
-                />
-              </div>
-            ))}
-
-            <div className="theme-strong-surface relative h-[92px] rounded-[30px] border px-4 py-4">
-              <div className="absolute inset-y-0 left-4 right-[116px] flex items-center gap-3">
+        <div className="mx-auto w-full max-w-[760px]">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_110px] lg:items-end">
+            <div>
+              <div className="relative h-[150px]">
                 {annotatedData.map((item) => (
                   <div
-                    key={item.name}
-                    className="h-8 rounded-full"
+                    key={`${item.name}-marker`}
+                    className="absolute top-0 flex flex-col items-center"
                     style={{
-                      flexBasis: `${item.percent}%`,
-                      flexGrow: item.value,
-                      backgroundColor: item.color,
-                      minWidth: 40
+                      left: `clamp(48px, calc(${item.start}% + 4px), calc(100% - 72px))`
                     }}
-                  />
+                  >
+                    <div
+                      className="rounded-[16px] px-3 py-1 text-sm font-semibold shadow-sm"
+                      style={{
+                        color: item.color,
+                        backgroundColor: "var(--surface)",
+                        boxShadow: "0 8px 20px rgba(0,0,0,0.08)"
+                      }}
+                    >
+                      {formatPercent(item.percent)}
+                    </div>
+                    <div className="theme-border mt-2 h-[62px] w-px border-l" />
+                    <span
+                      className="h-3 w-3 rounded-full border-2"
+                      style={{
+                        backgroundColor: item.color,
+                        borderColor: "var(--surface)"
+                      }}
+                    />
+                  </div>
+                ))}
+
+                <div className="theme-strong-surface absolute bottom-0 left-0 right-0 h-[64px] rounded-full px-4 py-3">
+                  <div className="flex h-full items-center gap-3">
+                    {annotatedData.map((item) => (
+                      <div
+                        key={item.name}
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${item.percent}%`,
+                          minWidth: 56,
+                          backgroundColor: item.color
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className={cn(
+                  "mt-5 grid gap-5",
+                  annotatedData.length === 1
+                    ? "grid-cols-1"
+                    : annotatedData.length === 2
+                      ? "grid-cols-2"
+                      : "grid-cols-3"
+                )}
+              >
+                {annotatedData.map((item) => (
+                  <div key={item.name} className="min-w-0">
+                    <p className="theme-text text-[clamp(1.8rem,3vw,2.6rem)] font-semibold tracking-[-0.05em]">
+                      {item.value.toLocaleString("pt-BR")}
+                    </p>
+                    <div className="mt-2 flex items-start gap-2">
+                      <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                      <div className="min-w-0">
+                        <p
+                          className="theme-text overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-medium sm:text-sm"
+                          title={item.name}
+                        >
+                          {item.name}
+                        </p>
+                        <p className="theme-muted text-xs">{formatPercent(item.percent)} da base</p>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-right">
+            </div>
+
+            <div className="theme-soft-surface flex h-[64px] items-center justify-center rounded-full px-5 text-right">
+              <div>
                 <p className="theme-text text-2xl font-semibold tracking-[-0.05em]">
                   {total.toLocaleString("pt-BR")}
                 </p>
-                <p className="theme-muted text-xs uppercase tracking-[0.18em]">clientes</p>
+                <p className="theme-muted text-xs uppercase tracking-[0.18em]">100% da base</p>
               </div>
             </div>
           </div>
@@ -529,33 +569,6 @@ export function OrigemMixCard({
         ))}
       </div>
 
-      <div
-        className={cn(
-          "grid gap-5",
-          formattedData.length === 1
-            ? "grid-cols-1"
-            : formattedData.length === 2
-              ? "sm:grid-cols-2"
-              : "sm:grid-cols-3"
-        )}
-      >
-        {annotatedData.map((item) => (
-          <div key={item.name} className="theme-soft-surface min-w-0 rounded-[20px] border p-4">
-            <p className="theme-text text-[clamp(1.8rem,3vw,2.6rem)] font-semibold tracking-[-0.05em]">
-              {item.value.toLocaleString("pt-BR")}
-            </p>
-            <div className="mt-2 flex items-start gap-2">
-              <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-              <div className="min-w-0">
-                <p className="theme-text overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-medium sm:text-sm" title={item.name}>
-                  {item.name}
-                </p>
-                <p className="theme-muted text-xs">{formatPercent(item.percent)} da base</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
