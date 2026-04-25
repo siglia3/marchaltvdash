@@ -9,6 +9,7 @@ import {
   InsightChip,
   MetricCard,
   OrigemMixCard,
+  SuccessGaugeCard,
   SummaryCard,
   statusColors
 } from "@/components/dashboard/dashboard-shared";
@@ -44,7 +45,7 @@ export function DashboardPage() {
 
         return (
           <div className="space-y-8 pb-10">
-            <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+            <div className="grid gap-4 xl:grid-cols-[1.05fr_0.6fr_0.6fr]">
               <SummaryCard title="Resumo da carteira">
                 <div>
                   <div className="flex items-end gap-3">
@@ -82,6 +83,17 @@ export function DashboardPage() {
                 description="Distribui a base entre clientes bons, em alerta e críticos."
               >
                 <HealthDonut data={healthPieData} />
+              </SummaryCard>
+
+              <SummaryCard
+                title="Índice de sucesso"
+                description="Consolida os três status da carteira em um medidor único de sucesso."
+              >
+                <SuccessGaugeCard
+                  bom={data.perc_bons}
+                  alerta={data.perc_alerta}
+                  critico={data.perc_critico}
+                />
               </SummaryCard>
             </div>
 

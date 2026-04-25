@@ -7,7 +7,8 @@ import type { LucideIcon } from "lucide-react";
 import {
   ArrowUpRight,
   CircleAlert,
-  CircleHelp
+  CircleHelp,
+  Smile
 } from "lucide-react";
 import {
   Bar,
@@ -519,6 +520,87 @@ export function OrigemMixCard({
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+export function SuccessGaugeCard({
+  bom,
+  alerta,
+  critico
+}: {
+  bom: number;
+  alerta: number;
+  critico: number;
+}) {
+  const score = Math.max(0, Math.min(100, bom + alerta * 0.5));
+  const gaugePath = "M 24 156 A 76 76 0 0 1 176 156";
+  const level =
+    score >= 75 ? "Sucesso alto" : score >= 60 ? "Sucesso saudável" : score >= 40 ? "Pede atenção" : "Risco elevado";
+
+  return (
+    <div className="mx-auto flex max-w-[360px] flex-col items-center">
+      <div className="relative h-[210px] w-full">
+        <svg viewBox="0 0 200 170" className="h-full w-full overflow-visible">
+          <path
+            d={gaugePath}
+            pathLength={100}
+            fill="none"
+            stroke="var(--surface-strong)"
+            strokeWidth="16"
+            strokeLinecap="round"
+          />
+          <path
+            d={gaugePath}
+            pathLength={100}
+            fill="none"
+            stroke="var(--success-color)"
+            strokeWidth="16"
+            strokeLinecap="round"
+            strokeDasharray={`${score} ${100 - score}`}
+          />
+        </svg>
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center pt-2 text-center">
+          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-[color:rgba(34,197,94,0.14)] text-success">
+            <Smile className="h-5 w-5" />
+          </div>
+          <p className="theme-text text-[44px] font-semibold leading-none tracking-[-0.05em]">
+            {formatPercent(score)}
+          </p>
+          <p className="theme-muted mt-2 text-sm">{level}</p>
+        </div>
+
+        <div className="theme-muted absolute bottom-0 left-0 text-xs font-medium">0%</div>
+        <div className="theme-muted absolute bottom-0 right-0 text-xs font-medium">100%</div>
+      </div>
+
+      <p className="theme-muted text-center text-sm leading-6">
+        Índice ponderado dos status: <span className="theme-text font-medium">Bom = 100</span>,{" "}
+        <span className="theme-text font-medium">Alerta = 50</span>,{" "}
+        <span className="theme-text font-medium">Crítico = 0</span>.
+      </p>
+
+      <div className="mt-4 grid w-full grid-cols-3 gap-2 text-center">
+        <div className="theme-soft-surface rounded-[18px] px-3 py-3">
+          <p className="text-xs font-medium uppercase tracking-[0.14em]" style={{ color: "var(--success-color)" }}>
+            Bom
+          </p>
+          <p className="theme-text mt-1 text-lg font-semibold">{formatPercent(bom)}</p>
+        </div>
+        <div className="theme-soft-surface rounded-[18px] px-3 py-3">
+          <p className="text-xs font-medium uppercase tracking-[0.14em]" style={{ color: "var(--warning-color)" }}>
+            Alerta
+          </p>
+          <p className="theme-text mt-1 text-lg font-semibold">{formatPercent(alerta)}</p>
+        </div>
+        <div className="theme-soft-surface rounded-[18px] px-3 py-3">
+          <p className="text-xs font-medium uppercase tracking-[0.14em]" style={{ color: "var(--danger-color)" }}>
+            Crítico
+          </p>
+          <p className="theme-text mt-1 text-lg font-semibold">{formatPercent(critico)}</p>
+        </div>
       </div>
     </div>
   );
