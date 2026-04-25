@@ -14,6 +14,7 @@ import {
   shortMonthLabel,
 } from "@/components/dashboard/dashboard-shared";
 import { BaseClienteDetalhado, ClientesDashboardData, EvolucaoMensal } from "@/lib/types";
+import { isAtivoValue } from "@/lib/utils";
 
 type ChartViewMode = "last12" | "period";
 type EntryViewMode = "last6" | "period";
@@ -26,7 +27,7 @@ function parseEvolutionMonth(label: string) {
   };
 }
 
-type MonthlyRow = EvolucaoMensal & {
+type MonthlyRow = Omit<EvolucaoMensal, "ano"> & {
   mesNome: string;
   ano: string;
   tooltipLabel: string;
@@ -102,8 +103,8 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
         const parsed = parseEvolutionMonth(item.mes);
         return {
           ...item,
-          mesNome: parsed.mes,
-          ano: parsed.ano,
+          mesNome: item.mes_nome ?? parsed.mes,
+          ano: item.ano ? String(item.ano) : parsed.ano,
           tooltipLabel: item.mes
         };
       }),
@@ -130,6 +131,11 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
         selectedMonth === "all" ? true : item.mesNome === selectedMonth
       ),
     [monthsForYear, selectedMonth]
+  );
+  const filteredTableRows = useMemo<EvolucaoMensal[]>(
+    () =>
+      filteredRows.map(({ mesNome, ano, tooltipLabel, ...item }) => item),
+    [filteredRows]
   );
 
   useEffect(() => {
@@ -169,9 +175,9 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
     () => [...lastTwelveRows].sort((a, b) => b.saidas - a.saidas)[0],
     [lastTwelveRows]
   );
-  const currentBase = data.clientes_ativos;
+  const currentBase = data.clientes_ativos_total ?? data.clientes_ativos;
   const baseClientes = data.base_clientes_detalhada ?? [];
-  const activeWithStatus = baseClientes.filter((cliente) => cliente.ativo === "Sim" && cliente.status !== "sem_status");
+  const activeWithStatus = baseClientes.filter((cliente) => isAtivoValue(cliente.ativo) && cliente.status !== "sem_status");
   const healthByNicho = Array.from(
     activeWithStatus.reduce<Map<string, { nicho: string; bom: number; alerta: number; critico: number }>>((acc, record) => {
       const nicho = record.nicho || "Sem nicho";
@@ -458,12 +464,12 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
       </SummaryCard>
 
       <EvolucaoTable
-        rows={filteredRows}
+        rows={filteredTableRows}
         footer={
           <div className="theme-strong-surface rounded-[18px] border p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-primary">Leitura rápida</p>
             <p className="theme-text mt-2 text-sm leading-6">
-              {getSimpleMonthlyInsight(filteredRows)}
+              {getSimpleMonthlyInsight(filteredTableRows)}
             </p>
           </div>
         }

@@ -45,6 +45,13 @@ function parseMonthYear(value: string | null) {
   return new Date(year, month - 1, 1);
 }
 
+function parseDatePt(value: string | null) {
+  if (!value) return null;
+  const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return null;
+  return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+}
+
 function monthKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -59,11 +66,11 @@ function parseChartPeriod(label: string) {
 }
 
 function resolveEntry(record: BaseClienteDetalhado) {
-  return parseMonthYear(record.ma_entrada) || (record.data_inicio ? new Date(record.data_inicio.split("/").reverse().join("-")) : null);
+  return parseMonthYear(record.ma_entrada) || parseDatePt(record.data_inicio);
 }
 
 function resolveExit(record: BaseClienteDetalhado) {
-  return parseMonthYear(record.ma_saida) || (record.data_saida ? new Date(record.data_saida.split("/").reverse().join("-")) : null);
+  return parseMonthYear(record.ma_saida) || parseDatePt(record.data_saida);
 }
 
 function filterDimensionRows(
@@ -99,6 +106,14 @@ function summarizeDimension(rows: Array<Record<string, any>>, label: string) {
   return `${top[0]} concentra o maior churn por ${label} no período exibido, com ${top[1]} saídas registradas.`;
 }
 
+const nicheColorMap: Record<string, string> = {
+  Saúde: "#22c55e",
+  Inglês: "#1a68ff",
+  Infoproduto: "#facc15",
+  Arquitetura: "#f97316",
+  Jurídico: "#ef4444"
+};
+
 export function SaidasPage() {
   return (
     <DashboardDataPage
@@ -123,11 +138,11 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
   const exitItems = useMemo<ExitItem[]>(
     () =>
       data.saidas_por_mes.map((item: any) => {
-        const { mes, ano } = parseExitMonth(item.mes);
+        const parsed = parseExitMonth(item.mes);
         return {
-          key: item.mes,
-          mes,
-          ano,
+          key: item.key ?? item.mes,
+          mes: item.mes_nome ?? parsed.mes,
+          ano: item.ano ? String(item.ano) : parsed.ano,
           label: item.mes,
           churn: item.churn,
           parcial: item.parcial,
@@ -420,8 +435,12 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
             description="Mostra quais nichos concentram mais saídas."
             actions={renderChartActions(nichoMode, setNichoMode, nichoYear, setNichoYear, nichoMonth, setNichoMonth, nicheYears, nicheMonths)}
           >
-            <div className="space-y-4">
-              <ChurnByDimensionChart data={nicheRows} palette={["#7c3aed", "#a855f7", "#22c55e", "#06b6d4", "#f59e0b"]} />
+              <div className="space-y-4">
+              <ChurnByDimensionChart
+                data={nicheRows}
+                palette={["#22c55e", "#1a68ff", "#facc15", "#f97316", "#ef4444"]}
+                colorMap={nicheColorMap}
+              />
               <div className="theme-strong-surface rounded-[18px] border p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-primary">Leitura rápida</p>
                 <p className="theme-text mt-2 text-sm leading-6">{summarizeDimension(nicheRows, "nicho")}</p>

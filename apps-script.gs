@@ -12,6 +12,9 @@ function doGet() {
 function buildDashboardPayload_() {
   var baseClientes = getSheetData_(SHEETS.BASE_CLIENTES);
   var hoje = new Date();
+  var clientesAtivosTotal = baseClientes.filter(function (row) {
+    return normalizeText_(getAtivo_(row)) === "sim";
+  });
 
   var clientesAtivosValidos = baseClientes.filter(function (row) {
     return normalizeText_(getAtivo_(row)) === "sim" && normalizeSaude_(getSaude_(row)) !== "";
@@ -48,6 +51,7 @@ function buildDashboardPayload_() {
     });
 
   var clientesAtivos = clientesAtivosValidos.length;
+  var clientesAtivosTotalCount = clientesAtivosTotal.length;
   var percBons = percent_(statusCounts.bons, clientesAtivos);
   var percAlerta = percent_(statusCounts.alerta, clientesAtivos);
   var percCritico = percent_(statusCounts.critico, clientesAtivos);
@@ -57,12 +61,14 @@ function buildDashboardPayload_() {
     : 0;
   var variacaoBase =
     baseMesRecente > 0
-      ? round_(((clientesAtivos - baseMesRecente) / baseMesRecente) * 100, 1)
+      ? round_(((clientesAtivosTotalCount - baseMesRecente) / baseMesRecente) * 100, 1)
       : 0;
 
   return {
     atualizado_em: atualizadoEm,
     clientes_ativos: clientesAtivos,
+    clientes_ativos_total: clientesAtivosTotalCount,
+    clientes_sem_status: Math.max(clientesAtivosTotalCount - clientesAtivos, 0),
     clientes_bons: statusCounts.bons,
     clientes_alerta: statusCounts.alerta,
     clientes_critico: statusCounts.critico,
@@ -74,9 +80,13 @@ function buildDashboardPayload_() {
     taxa_sucesso: percBons,
     churn_medio: average_(churnFechado),
     variacao_base: variacaoBase,
-    por_gestor: buildPorGestor_(clientesAtivosValidos, hoje),
+    por_gestor: buildPorGestor_(baseClientes, hoje),
     evolucao_mensal: evolucaoMensal.map(function (item) {
       return {
+        key: item.key,
+        ano: item.ano,
+        mes_numero: item.mesNumero,
+        mes_nome: item.mesNome,
         mes: item.label,
         base_inicio: item.base_inicio,
         entradas: item.entradas,
@@ -95,12 +105,16 @@ function buildPorGestor_(rows, hoje) {
   var grouped = {};
 
   rows.forEach(function (row) {
+    if (normalizeText_(getAtivo_(row)) !== "sim") return;
+
     var gestor = normalizeDisplayText_(getField_(row, ["GESTOR"])) || "Sem gestor";
     var saude = normalizeSaude_(getSaude_(row));
 
     if (!grouped[gestor]) {
       grouped[gestor] = {
         nome: gestor,
+        ativos: 0,
+        clientes_com_status: 0,
         bons: 0,
         alerta: 0,
         critico: 0,
@@ -108,9 +122,20 @@ function buildPorGestor_(rows, hoje) {
       };
     }
 
-    if (saude === "bom") grouped[gestor].bons += 1;
-    if (saude === "alerta") grouped[gestor].alerta += 1;
-    if (saude === "critico") grouped[gestor].critico += 1;
+    grouped[gestor].ativos += 1;
+
+    if (saude === "bom") {
+      grouped[gestor].bons += 1;
+      grouped[gestor].clientes_com_status += 1;
+    }
+    if (saude === "alerta") {
+      grouped[gestor].alerta += 1;
+      grouped[gestor].clientes_com_status += 1;
+    }
+    if (saude === "critico") {
+      grouped[gestor].critico += 1;
+      grouped[gestor].clientes_com_status += 1;
+    }
 
     var ltv = resolveLtvMeses_(row, hoje);
     if (ltv !== null) grouped[gestor].ltvValores.push(ltv);
@@ -119,9 +144,11 @@ function buildPorGestor_(rows, hoje) {
   return Object.keys(grouped)
     .map(function (nome) {
       var item = grouped[nome];
-      var total = item.bons + item.alerta + item.critico;
+      var total = item.clientes_com_status;
       return {
         nome: item.nome,
+        ativos: item.ativos,
+        clientes_com_status: item.clientes_com_status,
         bons: item.bons,
         alerta: item.alerta,
         critico: item.critico,
@@ -261,6 +288,10 @@ function buildSaidasPorMesFromBase_(rows, churnLookup, evolucaoMensal) {
       var item = grouped[key];
       return {
         sortKey: key,
+        key: key,
+        ano: item.ano,
+        mes_numero: item.mesNumero,
+        mes_nome: item.mesNome,
         mes: includeYear ? item.mesNome + "/" + item.ano : item.mesNome,
         churn: item.churn,
         parcial: item.parcial,
@@ -272,6 +303,10 @@ function buildSaidasPorMesFromBase_(rows, churnLookup, evolucaoMensal) {
     })
     .map(function (item) {
       return {
+        key: item.key,
+        ano: item.ano,
+        mes_numero: item.mes_numero,
+        mes_nome: item.mes_nome,
         mes: item.mes,
         churn: item.churn,
         parcial: item.parcial,

@@ -31,7 +31,7 @@ import {
   YAxis,
   ZAxis
 } from "recharts";
-import { cn, formatPercent } from "@/lib/utils";
+import { cn, formatPercent, isAtivoValue } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -463,8 +463,14 @@ export function OrigemMixCard({
     );
   }
 
-  const palette = ["var(--origin-ring-1)", "var(--origin-ring-2)", "var(--origin-ring-3)", "var(--origin-ring-4)"];
-  const normalized = data.slice(0, 4).map((item, index) => ({
+  const palette = [
+    "var(--origin-ring-1)",
+    "var(--origin-ring-2)",
+    "var(--origin-ring-3)",
+    "var(--origin-ring-4)",
+    "#6f7ea8"
+  ];
+  const normalized = data.map((item, index) => ({
     ...item,
     color: palette[index] || item.color
   }));
@@ -592,7 +598,7 @@ export function SuccessGaugeCard({
     bom >= 45 ? { value: bom, tone: "green" as const } : alerta >= critico
       ? { value: alerta, tone: "yellow" as const }
       : { value: critico, tone: "red" as const };
-  const clampedScore = Math.max(0, Math.min(100, dominant.value));
+  const clampedScore = Math.max(0, Math.min(100, score));
   const levelTone = dominant.tone;
   const scoreColor =
     levelTone === "green"
@@ -611,7 +617,7 @@ export function SuccessGaugeCard({
   return (
     <div className="mx-auto flex max-w-[360px] flex-col items-center">
       <div className="relative h-[292px] w-full">
-        <svg viewBox="0 0 200 190" className="h-full w-full overflow-visible">
+        <svg viewBox="0 0 200 190" className="absolute inset-x-0 -top-[30px] h-full w-full overflow-visible">
           <path
             d={gaugePath}
             pathLength={100}
@@ -1021,10 +1027,12 @@ export function HealthByOriginChart({
 
 export function ChurnByDimensionChart({
   data,
-  palette
+  palette,
+  colorMap
 }: {
   data: Array<Record<string, any>>;
   palette?: string[];
+  colorMap?: Record<string, string>;
 }) {
   const keys = Object.keys(data[0] ?? {}).filter(
     (key) => key !== "mes" && key !== "tooltipLabel" && key !== "ano" && key !== "mesNome"
@@ -1045,7 +1053,7 @@ export function ChurnByDimensionChart({
                 key={key}
                 dataKey={key}
                 name={key}
-                fill={chartPalette[index % chartPalette.length]}
+                fill={colorMap?.[key] ?? chartPalette[index % chartPalette.length]}
                 radius={[6, 6, 2, 2]}
                 maxBarSize={20}
               />
@@ -1056,7 +1064,7 @@ export function ChurnByDimensionChart({
       <ChartLegendRow
         items={keys.map((key, index) => ({
           label: key,
-          color: chartPalette[index % chartPalette.length]
+          color: colorMap?.[key] ?? chartPalette[index % chartPalette.length]
         }))}
       />
     </div>
@@ -1269,6 +1277,38 @@ export function SummaryCard({
   );
 }
 
+export function rankGestorMetrics(gestores: GestorMetric[]) {
+  const normalized = gestores
+    .map((gestor) => {
+      const clientesComStatus =
+        gestor.clientes_com_status ?? gestor.bons + gestor.alerta + gestor.critico;
+      const ativos = gestor.ativos ?? clientesComStatus;
+
+      return {
+        ...gestor,
+        ativos,
+        clientes_com_status: clientesComStatus
+      };
+    })
+    .filter((item) => (item.ativos ?? 0) > 0);
+
+  const maxCarteiraAtiva = normalized.reduce((max, item) => Math.max(max, item.ativos ?? 0), 0);
+  const maxLtv = normalized.reduce((max, item) => Math.max(max, item.ltv_medio), 0);
+
+  return normalized
+    .map((item) => {
+      const successScore = item.taxa_sucesso / 100;
+      const volumeScore = maxCarteiraAtiva ? (item.ativos ?? 0) / maxCarteiraAtiva : 0;
+      const ltvScore = maxLtv ? item.ltv_medio / maxLtv : 0;
+
+      return {
+        ...item,
+        score_composto: item.score_composto ?? (successScore * 0.5 + volumeScore * 0.3 + ltvScore * 0.2) * 100
+      };
+    })
+    .sort((a, b) => (b.score_composto ?? 0) - (a.score_composto ?? 0));
+}
+
 export function buildGestorMetricsFromBase(baseClientes: BaseClienteDetalhado[]) {
   const grouped = new Map<
     string,
@@ -1289,7 +1329,7 @@ export function buildGestorMetricsFromBase(baseClientes: BaseClienteDetalhado[])
     }
     const item = grouped.get(nome)!;
 
-    if (cliente.ativo === "Sim") {
+    if (isAtivoValue(cliente.ativo)) {
       item.ativos += 1;
       if (cliente.status === "bom") item.bons += 1;
       if (cliente.status === "alerta") item.alerta += 1;
@@ -1298,9 +1338,9 @@ export function buildGestorMetricsFromBase(baseClientes: BaseClienteDetalhado[])
     }
   });
 
-  var rawMetrics = Array.from(grouped.values())
+  const rawMetrics = Array.from(grouped.values())
     .map((item) => {
-      var total = item.bons + item.alerta + item.critico;
+      const total = item.bons + item.alerta + item.critico;
       return {
         nome: item.nome,
         ativos: item.ativos,
@@ -1316,30 +1356,5 @@ export function buildGestorMetricsFromBase(baseClientes: BaseClienteDetalhado[])
     })
     .filter((item) => item.ativos > 0);
 
-  var maxClientesComStatus = rawMetrics.reduce(function (max, item) {
-    return Math.max(max, item.clientes_com_status);
-  }, 0);
-  var maxLtv = rawMetrics.reduce(function (max, item) {
-    return Math.max(max, item.ltv_medio);
-  }, 0);
-
-  return rawMetrics
-    .map(function (item) {
-      var successScore = item.taxa_sucesso / 100;
-      var volumeScore = maxClientesComStatus ? item.clientes_com_status / maxClientesComStatus : 0;
-      var ltvScore = maxLtv ? item.ltv_medio / maxLtv : 0;
-
-      return {
-        nome: item.nome,
-        ativos: item.ativos,
-        clientes_com_status: item.clientes_com_status,
-        bons: item.bons,
-        alerta: item.alerta,
-        critico: item.critico,
-        taxa_sucesso: item.taxa_sucesso,
-        ltv_medio: item.ltv_medio,
-        score_composto: (successScore * 0.5 + volumeScore * 0.3 + ltvScore * 0.2) * 100
-      };
-    })
-    .sort((a, b) => (b.score_composto ?? 0) - (a.score_composto ?? 0));
+  return rankGestorMetrics(rawMetrics);
 }

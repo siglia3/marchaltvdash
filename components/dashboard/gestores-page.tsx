@@ -7,6 +7,7 @@ import {
   GestorPerformanceChart,
   GestorStatusCard,
   MetricCard,
+  rankGestorMetrics,
   SummaryCard
 } from "@/components/dashboard/dashboard-shared";
 import { Badge } from "@/components/ui/badge";
@@ -21,14 +22,14 @@ export function GestoresPage() {
     >
       {(data) => {
         const gestores = (
-          data.base_clientes_detalhada?.length
-            ? buildGestorMetricsFromBase(data.base_clientes_detalhada)
-            : data.por_gestor
+          data.por_gestor?.length
+            ? rankGestorMetrics(data.por_gestor)
+            : buildGestorMetricsFromBase(data.base_clientes_detalhada ?? [])
         ).sort((a, b) => (b.score_composto ?? 0) - (a.score_composto ?? 0));
         const gestoresComDados = gestores.filter(
           (gestor) => (gestor.clientes_com_status ?? (gestor.bons + gestor.alerta + gestor.critico)) > 0
         );
-        const topGestor = gestoresComDados[0];
+        const topGestor = gestores[0];
         const avgSuccess =
           gestoresComDados.reduce((acc, gestor) => acc + gestor.taxa_sucesso, 0) / Math.max(gestoresComDados.length, 1);
         const avgScore =
@@ -83,11 +84,11 @@ export function GestoresPage() {
                 </div>
                 <div className="theme-soft-surface theme-muted inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs uppercase tracking-[0.18em]">
                   <Activity className="h-3.5 w-3.5 text-primary" />
-                  {gestoresComDados.length} gestores
+                  {gestores.length} gestores
                 </div>
               </CardHeader>
               <CardContent className="mt-5 space-y-4">
-                {gestoresComDados.map((gestor, index) => {
+                {gestores.map((gestor, index) => {
                   const tone =
                     (gestor.score_composto ?? 0) >= 50 ? "green" : (gestor.score_composto ?? 0) >= 30 ? "yellow" : "red";
 

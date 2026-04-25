@@ -11,6 +11,10 @@ export type GestorMetric = {
 };
 
 export type EvolucaoMensal = {
+  key?: string;
+  ano?: number;
+  mes_numero?: number;
+  mes_nome?: string;
   mes: string;
   base_inicio: number;
   entradas: number | null;
@@ -20,6 +24,10 @@ export type EvolucaoMensal = {
 };
 
 export type SaidasPorMes = {
+  key?: string;
+  ano?: number;
+  mes_numero?: number;
+  mes_nome?: string;
   mes: string;
   churn: number | null;
   parcial: boolean;
@@ -55,6 +63,8 @@ export type BaseClienteDetalhado = {
 export type ClientesDashboardData = {
   atualizado_em: string;
   clientes_ativos: number;
+  clientes_ativos_total?: number;
+  clientes_sem_status?: number;
   clientes_bons: number;
   clientes_alerta: number;
   clientes_critico: number;

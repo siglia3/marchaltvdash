@@ -11,11 +11,12 @@ import {
   LtvDistributionChart,
   MetricCard,
   OrigemMixCard,
+  rankGestorMetrics,
   SuccessGaugeCard,
   SummaryCard
 } from "@/components/dashboard/dashboard-shared";
 import type { BaseClienteDetalhado } from "@/lib/types";
-import { formatPercent, formatSignedPercent } from "@/lib/utils";
+import { formatPercent, formatSignedPercent, isAtivoValue } from "@/lib/utils";
 
 export function DashboardPage() {
   return (
@@ -24,22 +25,27 @@ export function DashboardPage() {
       description="Resumo da saúde da carteira, retenção e churn."
     >
       {(data) => {
-        const origemPalette = ["var(--primary-color)", "#64a7fe", "#c9cfe5", "#a8b2d2"];
-        const origemSource = data.base_clientes_detalhada?.filter((cliente) => cliente.ativo === "Sim") ?? data.clientes_detalhados ?? [];
+        const origemPalette = ["var(--primary-color)", "#64a7fe", "#c9cfe5", "#a8b2d2", "#6f7ea8"];
+        const totalAtivos = data.clientes_ativos_total ?? data.clientes_ativos;
+        const origemSource = data.base_clientes_detalhada?.filter((cliente) => isAtivoValue(cliente.ativo)) ?? data.clientes_detalhados ?? [];
         const origemCounts = origemSource.reduce<Record<string, number>>((acc, cliente) => {
           const origem = (cliente.origem ?? "Sem origem").trim() || "Sem origem";
           acc[origem] = (acc[origem] ?? 0) + 1;
           return acc;
         }, {});
-        const origemData = Object.entries(origemCounts)
+        const origemEntries = Object.entries(origemCounts)
+          .sort((a, b) => b[1] - a[1]);
+        const topOrigens = origemEntries.slice(0, 4);
+        const outrasOrigens = origemEntries.slice(4).reduce((acc, [, value]) => acc + value, 0);
+        const origemData = [...topOrigens, ...(outrasOrigens ? [["Outras", outrasOrigens] as const] : [])]
           .map(([name, value], index) => ({
             name,
             value,
-            percent: data.clientes_ativos ? (value / data.clientes_ativos) * 100 : 0,
+            percent: totalAtivos ? (value / totalAtivos) * 100 : 0,
             color: origemPalette[index % origemPalette.length]
-          }))
-          .sort((a, b) => b.value - a.value);
-        const activeBase = (data.base_clientes_detalhada ?? []).filter((record) => record.ativo === "Sim");
+          }));
+        const activeBase = (data.base_clientes_detalhada ?? []).filter((record) => isAtivoValue(record.ativo));
+        const activeWithStatus = activeBase.filter((record) => record.status !== "sem_status");
         const overviewMonthlyRows = data.evolucao_mensal.slice(-12).map((item) => ({
           ...item,
           axisLabel: item.mes.split("/")[0].slice(0, 3),
@@ -59,7 +65,7 @@ export function DashboardPage() {
           }).length
         }));
         const healthByOrigin = Array.from(
-          activeBase.reduce<Map<string, { origem: string; bom: number; alerta: number; critico: number }>>((acc, record) => {
+          activeWithStatus.reduce<Map<string, { origem: string; bom: number; alerta: number; critico: number }>>((acc, record) => {
             const origem = record.origem || "Sem origem";
             if (!acc.has(origem)) {
               acc.set(origem, { origem, bom: 0, alerta: 0, critico: 0 });
@@ -74,9 +80,9 @@ export function DashboardPage() {
           .map(([, value]) => value)
           .sort((a, b) => b.bom + b.alerta + b.critico - (a.bom + a.alerta + a.critico));
         const gestores = (
-          data.base_clientes_detalhada?.length
-            ? buildGestorMetricsFromBase(data.base_clientes_detalhada as BaseClienteDetalhado[])
-            : data.por_gestor
+          data.por_gestor?.length
+            ? rankGestorMetrics(data.por_gestor)
+            : buildGestorMetricsFromBase(data.base_clientes_detalhada as BaseClienteDetalhado[])
         ).filter((gestor) => (gestor.clientes_com_status ?? (gestor.bons + gestor.alerta + gestor.critico)) > 0);
 
         return (
@@ -85,7 +91,7 @@ export function DashboardPage() {
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <MetricCard
                 title="Clientes ativos"
-                value={data.clientes_ativos}
+                value={totalAtivos}
                 description="Base completa dos clientes ativos."
                 badge={`${formatSignedPercent(data.variacao_base)} vs. referência`}
                 icon={Users}
