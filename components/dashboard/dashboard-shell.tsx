@@ -60,9 +60,9 @@ export function DashboardShell({
   return (
     <div className="theme-app min-h-screen theme-text">
       <div className="flex min-h-screen flex-col md:flex-row">
-        <aside className="theme-sidebar border-b md:sticky md:top-0 md:h-screen md:w-[280px] md:border-b-0 md:border-r">
+        <aside className="theme-sidebar md:sticky md:top-0 md:h-screen md:w-[280px]">
           <div className="flex h-full flex-col">
-            <div className="theme-border border-b px-6 py-7">
+            <div className="px-6 py-7">
               <div className="brand-logo" aria-label="Marcha Ads" role="img" />
             </div>
 
@@ -96,8 +96,8 @@ export function DashboardShell({
               })}
             </nav>
 
-            <div className="theme-border mt-auto border-t px-6 py-5">
-              <div className="mx-auto w-fit rounded-full border theme-soft-surface p-1">
+            <div className="mt-auto px-6 py-5">
+              <div className="mx-auto w-fit rounded-full theme-soft-surface p-1">
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
@@ -131,7 +131,7 @@ export function DashboardShell({
 
         <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-[1380px]">
-          <header className="theme-surface mb-6 rounded-[24px] border px-6 py-5 shadow-panel">
+          <header className="theme-surface mb-6 rounded-[24px] px-6 py-5">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-3xl">
                 <p className="theme-muted text-xs uppercase tracking-[0.22em]">Dashboard / Saúde de Clientes</p>
@@ -140,7 +140,7 @@ export function DashboardShell({
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <div className="theme-soft-surface theme-muted rounded-[16px] border px-4 py-3 text-sm">
+                <div className="theme-soft-surface theme-muted rounded-[16px] px-4 py-3 text-sm">
                   Última atualização: <span className="theme-text font-semibold">{updatedAt ?? "—"}</span>
                 </div>
                 <Button className="rounded-[16px] bg-primary text-white hover:bg-blue-600" onClick={onRefresh}>
@@ -161,9 +161,9 @@ export function DashboardShell({
                   key={`mobile-${item.href}`}
                   href={item.href}
                   className={cn(
-                    "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-sm transition",
+                    "inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm transition",
                     isActive
-                      ? "border-primary bg-primary text-white"
+                      ? "bg-primary text-white"
                       : "theme-surface theme-muted"
                   )}
                 >
