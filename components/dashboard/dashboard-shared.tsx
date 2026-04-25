@@ -1063,9 +1063,10 @@ export function EntryExitBaseChart({
   compactLegend?: boolean;
 }) {
   return (
-    <div className="h-[380px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={data} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
+    <div className="space-y-6">
+      <div className="h-[312px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="entryArea" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="rgba(97, 217, 117, 0.34)" />
@@ -1082,7 +1083,7 @@ export function EntryExitBaseChart({
           <Tooltip content={<CustomTooltip />} />
           <Bar
             dataKey="base_inicio"
-            name="Base"
+            name="Base ativa"
             fill="url(#baseBarGlass)"
             radius={[6, 6, 2, 2]}
             barSize={24}
@@ -1104,10 +1105,12 @@ export function EntryExitBaseChart({
             strokeDasharray="8 6"
             dot={{ r: 4, fill: "var(--danger-color)", stroke: "var(--surface)", strokeWidth: 2 }}
           />
-        </ComposedChart>
-      </ResponsiveContainer>
-      <ChartLegendRow
-        className={compactLegend ? "mt-6 mb-8" : "mt-6"}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="px-3">
+        <ChartLegendRow
+        className={compactLegend ? "mt-0" : "mt-0"}
         items={[
           {
             label: "Base ativa",
@@ -1125,7 +1128,8 @@ export function EntryExitBaseChart({
             description: compactLegend ? undefined : "Clientes que saíram no período selecionado."
           }
         ]}
-      />
+        />
+      </div>
     </div>
   );
 }

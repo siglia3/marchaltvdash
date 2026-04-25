@@ -357,7 +357,7 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <SummaryCard
           title="Entradas, saídas e base ativa"
-          description="Análise o tamanho da base, entrada e saída de clientes por período."
+          description="Análise da quantidade de base ativa, entrada e saída de clientes."
           actions={renderPeriodControls(
             selectedChartMode,
             setSelectedChartMode,
