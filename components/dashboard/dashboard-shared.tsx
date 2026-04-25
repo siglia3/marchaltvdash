@@ -8,6 +8,8 @@ import {
   ArrowUpRight,
   CircleAlert,
   CircleHelp,
+  Frown,
+  Meh,
   Smile
 } from "lucide-react";
 import {
@@ -224,6 +226,19 @@ export function CustomTooltip({
 }) {
   if (!active || !payload?.length) return null;
   const tooltipLabel = payload[0]?.payload?.tooltipLabel ?? label;
+  const resolveSeriesColor = function (item: {
+    name: string;
+    color?: string;
+    fill?: string;
+    payload?: Record<string, any>;
+  }) {
+    if (item.name === "Taxa de sucesso") return "var(--primary-color)";
+    if (item.name === "LTV médio por mês") return "var(--success-color)";
+    if (item.name === "Bom") return "var(--success-color)";
+    if (item.name === "Alerta") return "var(--warning-color)";
+    if (item.name === "Crítico") return "var(--danger-color)";
+    return item.color ?? item.fill ?? item.payload?.color ?? "#93c5fd";
+  };
 
   return (
     <div className="theme-surface rounded-[18px] border p-3">
@@ -247,7 +262,7 @@ export function CustomTooltip({
               <span className="theme-muted flex items-center gap-2">
                 <span
                   className="h-2.5 w-2.5 rounded-full"
-                  style={{ backgroundColor: item.color ?? item.fill ?? item.payload?.color ?? "#93c5fd" }}
+                  style={{ backgroundColor: resolveSeriesColor(item) }}
                 />
                 {item.name}
               </span>
@@ -456,49 +471,92 @@ export function OrigemMixCard({
     color: palette[index] || item.color
   }));
 
-  let cumulative = 0;
-  const annotated = normalized.map((item) => {
-    const start = cumulative;
+  var cumulative = 0;
+  var annotated = normalized.map(function (item) {
+    var start = cumulative;
     cumulative += item.percent;
-    return { ...item, start };
+    var midAngle = ((start + item.percent / 2) / 100) * 360 - 90;
+    return { ...item, start: start, midAngle: midAngle };
   });
 
   return (
     <div className="space-y-6">
       <div className="hidden md:block">
-        <div className="relative mx-auto max-w-[760px]">
-          <div className="relative h-[168px]">
-            {annotated.map((item) => (
+        <div className="relative mx-auto max-w-[520px]">
+          <div className="relative h-[420px]">
+            <div className="absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={annotated}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={70}
+                    outerRadius={118}
+                    stroke="var(--surface)"
+                    strokeWidth={6}
+                    paddingAngle={2}
+                  >
+                    {annotated.map((entry) => (
+                      <Cell key={entry.name} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {annotated.map((item) => {
+              const radians = (item.midAngle * Math.PI) / 180;
+              const anchorX = 50 + Math.cos(radians) * 22;
+              const anchorY = 50 + Math.sin(radians) * 22;
+              const bubbleX = 50 + Math.cos(radians) * 41;
+              const bubbleY = 50 + Math.sin(radians) * 41;
+              const isRight = bubbleX >= 50;
+              const isBottom = bubbleY >= 50;
+
+              return (
               <div
                 key={`${item.name}-callout`}
-                className="absolute top-0 flex flex-col items-start"
-                style={{ left: `${Math.min(item.start, 90)}%` }}
+                className="absolute"
+                style={{
+                  left: `${bubbleX}%`,
+                  top: `${bubbleY}%`,
+                  transform: `translate(${isRight ? "0%" : "-100%"}, ${isBottom ? "0%" : "-100%"})`
+                }}
               >
                 <div
-                  className="min-w-[132px] rounded-[18px] border px-3 py-2 shadow-sm"
+                  className="min-w-[144px] rounded-[18px] px-4 py-3 shadow-[0_18px_40px_rgba(5,8,17,0.22)]"
                   style={{
-                    backgroundColor: "var(--surface)",
-                    borderColor: item.color
+                    backgroundColor: item.color,
+                    color: item.color === "var(--origin-ring-3)" || item.color === "var(--origin-ring-4)" ? "#0f172a" : "#ffffff"
                   }}
                 >
-                  <p className="text-base font-semibold" style={{ color: item.color }}>
+                  <p className="text-base font-semibold">
                     {formatPercent(item.percent)}
                   </p>
-                  <p className="theme-text mt-1 text-sm font-semibold">{item.name}</p>
-                  <p className="theme-muted mt-1 text-xs">{item.value} clientes</p>
+                  <p className="mt-1 text-sm font-semibold">{item.name}</p>
+                  <p className="mt-1 text-xs opacity-90">{item.value} clientes</p>
                 </div>
-                <div className="mt-2 h-[44px] w-px" style={{ backgroundColor: "var(--border-color)" }} />
-                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+                <div
+                  className="absolute h-px"
+                  style={{
+                    left: isRight ? "-28px" : "100%",
+                    top: "50%",
+                    width: "28px",
+                    backgroundColor: item.color
+                  }}
+                />
+                <span
+                  className="absolute h-3 w-3 -translate-y-1/2 rounded-full"
+                  style={{
+                    left: `${anchorX - bubbleX}%`,
+                    top: `${anchorY - bubbleY}%`,
+                    backgroundColor: item.color
+                  }}
+                />
               </div>
-            ))}
-
-            <div className="theme-strong-surface absolute bottom-0 left-0 right-0 h-[30px] overflow-hidden rounded-full">
-              <div className="flex h-full w-full overflow-hidden rounded-full">
-                {annotated.map((item) => (
-                  <div key={item.name} style={{ width: `${item.percent}%`, backgroundColor: item.color }} />
-                ))}
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -526,30 +584,49 @@ export function OrigemMixCard({
 }
 
 export function SuccessGaugeCard({
+  score,
   bom,
   alerta,
   critico
 }: {
+  score: number;
   bom: number;
   alerta: number;
   critico: number;
 }) {
-  const score = Math.max(0, Math.min(100, bom + alerta * 0.5));
   const gaugePath = "M 24 156 A 76 76 0 0 1 176 156";
-  const level =
-    score >= 75 ? "Sucesso alto" : score >= 60 ? "Sucesso saudável" : score >= 40 ? "Pede atenção" : "Risco elevado";
+  const clampedScore = Math.max(0, Math.min(100, score));
+  const levelTone = clampedScore >= 65 ? "green" : clampedScore >= 40 ? "yellow" : "red";
+  const scoreColor =
+    levelTone === "green"
+      ? "var(--success-color)"
+      : levelTone === "yellow"
+        ? "var(--warning-color)"
+        : "var(--danger-color)";
+  const FaceIcon = levelTone === "green" ? Smile : levelTone === "yellow" ? Meh : Frown;
 
   return (
     <div className="mx-auto flex max-w-[360px] flex-col items-center">
-      <div className="relative h-[210px] w-full">
+      <div className="relative h-[220px] w-full">
         <svg viewBox="0 0 200 170" className="h-full w-full overflow-visible">
           <path
             d={gaugePath}
             pathLength={100}
             fill="none"
-            stroke="var(--surface-strong)"
+            stroke="var(--danger-color)"
             strokeWidth="16"
             strokeLinecap="round"
+            strokeDasharray="33 67"
+          />
+          <path
+            d={gaugePath}
+            pathLength={100}
+            fill="none"
+            stroke="var(--warning-color)"
+            strokeWidth="16"
+            strokeLinecap="round"
+            strokeDasharray="33 67"
+            strokeDashoffset="-33"
           />
           <path
             d={gaugePath}
@@ -558,48 +635,60 @@ export function SuccessGaugeCard({
             stroke="var(--success-color)"
             strokeWidth="16"
             strokeLinecap="round"
-            strokeDasharray={`${score} ${100 - score}`}
+            strokeDasharray="34 66"
+            strokeDashoffset="-66"
+          />
+          <path
+            d={gaugePath}
+            pathLength={100}
+            fill="none"
+            stroke={scoreColor}
+            strokeWidth="18"
+            strokeLinecap="round"
+            strokeDasharray={`${clampedScore} ${100 - clampedScore}`}
           />
         </svg>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center pt-2 text-center">
-          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-[color:rgba(34,197,94,0.14)] text-success">
-            <Smile className="h-5 w-5" />
+          <div
+            className="mb-3 flex h-11 w-11 items-center justify-center rounded-full"
+            style={{ backgroundColor: `${scoreColor}24`, color: scoreColor }}
+          >
+            <FaceIcon className="h-5 w-5" />
           </div>
-          <p className="theme-text text-[44px] font-semibold leading-none tracking-[-0.05em]">
-            {formatPercent(score)}
+          <p className="text-[44px] font-semibold leading-none tracking-[-0.05em]" style={{ color: scoreColor }}>
+            {formatPercent(clampedScore)}
           </p>
-          <p className="theme-muted mt-2 text-sm">{level}</p>
         </div>
-
-        <div className="theme-muted absolute bottom-0 left-0 text-xs font-medium">0%</div>
-        <div className="theme-muted absolute bottom-0 right-0 text-xs font-medium">100%</div>
       </div>
 
-      <p className="theme-muted text-center text-sm leading-6">
-        Índice ponderado dos status: <span className="theme-text font-medium">Bom = 100</span>,{" "}
-        <span className="theme-text font-medium">Alerta = 50</span>,{" "}
-        <span className="theme-text font-medium">Crítico = 0</span>.
-      </p>
-
       <div className="mt-4 grid w-full grid-cols-3 gap-2 text-center">
-        <div className="theme-soft-surface rounded-[18px] px-3 py-3">
+        <div
+          className="rounded-[18px] px-3 py-3"
+          style={{ background: "linear-gradient(135deg, rgba(31,143,77,0.24) 0%, rgba(97,217,117,0.18) 100%)" }}
+        >
           <p className="text-xs font-medium uppercase tracking-[0.14em]" style={{ color: "var(--success-color)" }}>
             Bom
           </p>
-          <p className="theme-text mt-1 text-lg font-semibold">{formatPercent(bom)}</p>
+          <p className="mt-1 text-lg font-semibold text-white">{formatPercent(bom)}</p>
         </div>
-        <div className="theme-soft-surface rounded-[18px] px-3 py-3">
+        <div
+          className="rounded-[18px] px-3 py-3"
+          style={{ background: "linear-gradient(135deg, rgba(216,138,5,0.24) 0%, rgba(255,198,3,0.18) 100%)" }}
+        >
           <p className="text-xs font-medium uppercase tracking-[0.14em]" style={{ color: "var(--warning-color)" }}>
             Alerta
           </p>
-          <p className="theme-text mt-1 text-lg font-semibold">{formatPercent(alerta)}</p>
+          <p className="mt-1 text-lg font-semibold text-white">{formatPercent(alerta)}</p>
         </div>
-        <div className="theme-soft-surface rounded-[18px] px-3 py-3">
+        <div
+          className="rounded-[18px] px-3 py-3"
+          style={{ background: "linear-gradient(135deg, rgba(209,24,55,0.24) 0%, rgba(255,76,97,0.18) 100%)" }}
+        >
           <p className="text-xs font-medium uppercase tracking-[0.14em]" style={{ color: "var(--danger-color)" }}>
             Crítico
           </p>
-          <p className="theme-text mt-1 text-lg font-semibold">{formatPercent(critico)}</p>
+          <p className="mt-1 text-lg font-semibold text-white">{formatPercent(critico)}</p>
         </div>
       </div>
     </div>
@@ -618,12 +707,6 @@ export function GestorCrossMetricSummary({ gestores }: { gestores: GestorMetric[
 
   return (
     <div>
-      <ChartLegendRow
-        items={[
-          { label: "Taxa de sucesso", color: "var(--primary-color)", description: "Percentual de clientes Bom na carteira ativa." },
-          { label: "LTV médio por mês", color: "var(--success-color)", description: "Tempo médio de permanência em meses." }
-        ]}
-      />
       <div className="h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 8, right: 10, left: -10, bottom: 0 }}>
@@ -643,6 +726,12 @@ export function GestorCrossMetricSummary({ gestores }: { gestores: GestorMetric[
           </ComposedChart>
         </ResponsiveContainer>
       </div>
+      <ChartLegendRow
+        items={[
+          { label: "Taxa de sucesso", color: "var(--primary-color)", description: "Percentual de clientes BONS na carteira ativa." },
+          { label: "LTV médio por mês", color: "var(--success-color)", description: "Tempo médio de permanência em meses." }
+        ]}
+      />
     </div>
   );
 }
@@ -664,13 +753,6 @@ export function GestorStatusCard({ gestores }: { gestores: GestorMetric[] }) {
         </div>
       </CardHeader>
       <CardContent className="mt-5">
-        <ChartLegendRow
-          items={[
-            { label: "Bom", color: "var(--success-color)" },
-            { label: "Alerta", color: "var(--warning-color)" },
-            { label: "Crítico", color: "var(--danger-color)" }
-          ]}
-        />
         <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 0, left: 6, bottom: 0 }}>
@@ -698,6 +780,13 @@ export function GestorStatusCard({ gestores }: { gestores: GestorMetric[] }) {
             </BarChart>
           </ResponsiveContainer>
         </div>
+        <ChartLegendRow
+          items={[
+            { label: "Bom", color: "var(--success-color)" },
+            { label: "Alerta", color: "var(--warning-color)" },
+            { label: "Crítico", color: "var(--danger-color)" }
+          ]}
+        />
       </CardContent>
     </Card>
   );
@@ -720,12 +809,6 @@ export function GestorPerformanceChart({ gestores }: { gestores: GestorMetric[] 
         </div>
       </CardHeader>
       <CardContent className="mt-5">
-        <ChartLegendRow
-          items={[
-            { label: "Taxa de sucesso", color: "var(--primary-color)", description: "Percentual de clientes Bom." },
-            { label: "LTV médio por mês", color: "var(--success-color)", description: "Permanência média em meses." }
-          ]}
-        />
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 8, right: 10, left: -10, bottom: 0 }}>
@@ -745,6 +828,12 @@ export function GestorPerformanceChart({ gestores }: { gestores: GestorMetric[] 
             </ComposedChart>
           </ResponsiveContainer>
         </div>
+        <ChartLegendRow
+          items={[
+            { label: "Taxa de sucesso", color: "var(--primary-color)", description: "Percentual de clientes BONS." },
+            { label: "LTV médio por mês", color: "var(--success-color)", description: "Permanência média em meses." }
+          ]}
+        />
       </CardContent>
     </Card>
   );
@@ -874,13 +963,6 @@ export function HealthByOriginChart({
 }) {
   return (
     <div>
-      <ChartLegendRow
-        items={[
-          { label: "Bom", color: "var(--success-color)" },
-          { label: "Alerta", color: "var(--warning-color)" },
-          { label: "Crítico", color: "var(--danger-color)" }
-        ]}
-      />
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -908,6 +990,13 @@ export function HealthByOriginChart({
           </BarChart>
         </ResponsiveContainer>
       </div>
+      <ChartLegendRow
+        items={[
+          { label: "Bom", color: "var(--success-color)" },
+          { label: "Alerta", color: "var(--warning-color)" },
+          { label: "Crítico", color: "var(--danger-color)" }
+        ]}
+      />
     </div>
   );
 }
@@ -924,13 +1013,6 @@ export function ChurnByDimensionChart({
 
   return (
     <div>
-      <ChartLegendRow
-        items={keys.map((key, index) => ({
-          label: key,
-          color: palette[index % palette.length],
-          description: dimensionLabel
-        }))}
-      />
       <div className="h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -944,6 +1026,13 @@ export function ChurnByDimensionChart({
           </BarChart>
         </ResponsiveContainer>
       </div>
+      <ChartLegendRow
+        items={keys.map((key, index) => ({
+          label: key,
+          color: palette[index % palette.length],
+          description: dimensionLabel
+        }))}
+      />
     </div>
   );
 }

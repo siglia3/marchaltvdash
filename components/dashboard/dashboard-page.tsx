@@ -5,13 +5,11 @@ import { AlertTriangle, ShieldAlert, ShieldCheck, Users } from "lucide-react";
 import { DashboardDataPage } from "@/components/dashboard/dashboard-shell";
 import {
   GestorCrossMetricSummary,
-  HealthDonut,
   InsightChip,
   MetricCard,
   OrigemMixCard,
   SuccessGaugeCard,
-  SummaryCard,
-  statusColors
+  SummaryCard
 } from "@/components/dashboard/dashboard-shared";
 import { formatMonths, formatPercent, formatSignedPercent } from "@/lib/utils";
 
@@ -22,11 +20,6 @@ export function DashboardPage() {
       description="Resumo da saúde da carteira, retenção e churn."
     >
       {(data) => {
-        const healthPieData = [
-          { name: "Bom", value: data.clientes_bons, percent: data.perc_bons, color: statusColors.bom },
-          { name: "Alerta", value: data.clientes_alerta, percent: data.perc_alerta, color: statusColors.alerta },
-          { name: "Crítico", value: data.clientes_critico, percent: data.perc_critico, color: statusColors.critico }
-        ];
         const origemPalette = ["var(--primary-color)", "#64a7fe", "#c9cfe5", "#a8b2d2"];
         const origemSource = data.base_clientes_detalhada?.filter((cliente) => cliente.ativo === "Sim") ?? data.clientes_detalhados ?? [];
         const origemCounts = origemSource.reduce<Record<string, number>>((acc, cliente) => {
@@ -45,16 +38,13 @@ export function DashboardPage() {
 
         return (
           <div className="space-y-8 pb-10">
-            <div className="grid gap-4 xl:grid-cols-[1.05fr_0.6fr_0.6fr]">
+            <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
               <SummaryCard title="Resumo da carteira">
                 <div>
                   <div className="flex items-end gap-3">
                     <span className="theme-text text-[55px] font-semibold leading-none tracking-[-0.06em]">{data.clientes_ativos}</span>
                     <span className="theme-muted pb-2 text-lg">clientes ativos</span>
                   </div>
-                  <p className="theme-muted mt-4 max-w-2xl text-sm leading-7">
-                    {data.clientes_bons} clientes estão bem, {data.clientes_alerta} pedem atenção e {data.clientes_critico} estão em situação crítica.
-                  </p>
                   <div className="mt-6 grid gap-3 sm:grid-cols-3">
                     <InsightChip
                       label="Taxa de sucesso"
@@ -68,28 +58,15 @@ export function DashboardPage() {
                       tone="blue"
                       tooltip="Tempo médio de permanência da base ativa. Usa PERÍODO quando existe; se não, calcula pela diferença entre DATA PLANEJAMENTO e SAÍDA CLIENTE ou a data atual."
                     />
-                    <InsightChip
-                      label="Variação da base"
-                      value={formatSignedPercent(data.variacao_base)}
-                      tone={data.variacao_base >= 0 ? "blue" : "yellow"}
-                      tooltip="Compara a base ativa atual com a base de início do mês mais recente da série mensal. Cálculo: (clientes_ativos - base_mes_recente) / base_mes_recente."
-                    />
                   </div>
                 </div>
               </SummaryCard>
 
               <SummaryCard
-                title="Status dos clientes ativos"
-                description="Distribui a base entre clientes bons, em alerta e críticos."
-              >
-                <HealthDonut data={healthPieData} />
-              </SummaryCard>
-
-              <SummaryCard
                 title="Índice de sucesso"
-                description="Consolida os três status da carteira em um medidor único de sucesso."
               >
                 <SuccessGaugeCard
+                  score={data.taxa_sucesso}
                   bom={data.perc_bons}
                   alerta={data.perc_alerta}
                   critico={data.perc_critico}
