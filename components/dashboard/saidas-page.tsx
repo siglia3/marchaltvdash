@@ -5,7 +5,6 @@ import { AlertTriangle, CalendarRange, Clock3 } from "lucide-react";
 import { DashboardDataPage } from "@/components/dashboard/dashboard-shell";
 import {
   ChurnByDimensionChart,
-  CohortRetentionHeatmap,
   InsightChip,
   MonthExitBar,
   SummaryCard,
@@ -41,10 +40,6 @@ function parseMonthYear(value: string | null) {
   if (!month || month < 1 || month > 12) return null;
   const year = rawYear < 100 ? rawYear + 2000 : rawYear;
   return new Date(year, month - 1, 1);
-}
-
-function diffMonths(start: Date, end: Date) {
-  return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
 }
 
 function monthKey(date: Date) {
@@ -140,36 +135,6 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
       .filter((record) => record.entry);
   }, [base]);
 
-  const cohortRows = useMemo(() => {
-    const groups = new Map<string, typeof prepared>();
-    prepared.forEach((record) => {
-      if (!record.entry) return;
-      const key = monthLabel(record.entry);
-      const current = groups.get(key) ?? [];
-      current.push(record);
-      groups.set(key, current);
-    });
-
-    return Array.from(groups.entries())
-      .sort((a, b) => {
-        const da = resolveEntry(a[1][0] as BaseClienteDetalhado)!;
-        const db = resolveEntry(b[1][0] as BaseClienteDetalhado)!;
-        return db.getTime() - da.getTime();
-      })
-      .slice(0, 8)
-      .map(([cohort, records]) => {
-        const values = Array.from({ length: 6 }).map((_, index) => {
-          const retained = records.filter((record) => {
-            if (!record.entry) return false;
-            if (!record.exit) return true;
-            return diffMonths(record.entry, record.exit) >= index;
-          }).length;
-          return records.length ? Number(((retained / records.length) * 100).toFixed(1)) : null;
-        });
-        return { cohort, values };
-      });
-  }, [prepared]);
-
   const churnByOrigin = useMemo(() => {
     const exited = prepared.filter((record) => record.exit && record.origem);
     const topOrigins = Array.from(
@@ -224,6 +189,33 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
     });
   }, [prepared]);
 
+  const churnByNicho = useMemo(() => {
+    const exited = prepared.filter((record) => record.exit && record.nicho);
+    const topNichos = Array.from(
+      exited.reduce((acc, record) => {
+        const key = record.nicho || "Sem nicho";
+        acc.set(key, (acc.get(key) ?? 0) + 1);
+        return acc;
+      }, new Map<string, number>())
+    )
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name]) => name);
+
+    const months = Array.from(new Set(exited.map((record) => monthKey(record.exit!))))
+      .sort()
+      .slice(-12);
+
+    return months.map((key) => {
+      const date = new Date(Number(key.slice(0, 4)), Number(key.slice(5, 7)) - 1, 1);
+      const row: Record<string, any> = { mes: monthNames[date.getMonth()], tooltipLabel: monthLabel(date) };
+      topNichos.forEach((nicho) => {
+        row[nicho] = exited.filter((record) => monthKey(record.exit!) === key && (record.nicho || "Sem nicho") === nicho).length;
+      });
+      return row;
+    });
+  }, [prepared]);
+
   return (
     <div className="space-y-8 pb-10">
       <div className="grid gap-3 md:grid-cols-3">
@@ -255,7 +247,7 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
           <MonthExitBar data={data.saidas_por_mes} />
         </SummaryCard>
 
-        <SummaryCard title="Detalhamento" description="Escolha o mês e o ano para ver apenas a lista daquele período.">
+        <SummaryCard title="Detalhamento" description="Escolha o mês e o ano para ver a lista do período.">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-2">
               <span className="theme-muted text-xs uppercase tracking-[0.18em]">Ano</span>
@@ -329,11 +321,11 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
       {!!data.base_clientes_detalhada?.length && (
         <>
           <div className="grid gap-4 xl:grid-cols-2">
-            <SummaryCard title="Cohort de retenção" description="Mostra retenção real por safra de entrada ao longo dos primeiros meses.">
-              <CohortRetentionHeatmap rows={cohortRows} />
-            </SummaryCard>
             <SummaryCard title="Churn por origem de cliente" description="Mostra quais origens concentram mais saídas em cada mês.">
               <ChurnByDimensionChart data={churnByOrigin} dimensionLabel="Origem" />
+            </SummaryCard>
+            <SummaryCard title="Churn por nicho" description="Mostra quais nichos concentram mais saídas nos últimos 12 meses.">
+              <ChurnByDimensionChart data={churnByNicho} dimensionLabel="Nicho" />
             </SummaryCard>
           </div>
 
