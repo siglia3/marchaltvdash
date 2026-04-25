@@ -216,7 +216,7 @@ export function InsightChip({
       </p>
       <p
         className={cn(
-          "relative z-10 mt-8 max-w-[18rem] pr-10 text-[clamp(2rem,2.5vw,2.8rem)] font-semibold leading-tight tracking-[-0.04em]",
+          "relative z-10 mt-8 max-w-[18rem] pr-10 text-[28px] font-semibold leading-tight tracking-[-0.04em]",
           tone === "default" || tone === "blue" ? "theme-text" : "text-inherit"
         )}
       >
@@ -321,53 +321,50 @@ export function HealthDonut({
   const total = data.reduce((acc, item) => acc + item.value, 0);
 
   return (
-    <div className="theme-soft-surface rounded-[24px] border p-5">
-      <p className="theme-muted text-[11px] uppercase tracking-[0.2em]">Status da carteira</p>
-      <div className="mt-4 grid gap-4 lg:grid-cols-[220px_1fr] lg:items-center">
-        <div className="relative mx-auto h-[220px] w-[220px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey="value"
-                nameKey="name"
-                innerRadius={62}
-                outerRadius={92}
-                stroke="transparent"
-                paddingAngle={3}
-              >
-                {data.map((entry) => (
-                  <Cell key={entry.name} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-            <p className="theme-text text-5xl font-semibold tracking-[-0.05em]">{total}</p>
-            <p className="theme-muted mt-1 text-xs uppercase tracking-[0.18em]">clientes ativos</p>
-          </div>
+    <div className="grid gap-4 lg:grid-cols-[220px_1fr] lg:items-center">
+      <div className="relative mx-auto h-[220px] w-[220px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={62}
+              outerRadius={92}
+              stroke="transparent"
+              paddingAngle={3}
+            >
+              {data.map((entry) => (
+                <Cell key={entry.name} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+          <p className="theme-text text-5xl font-semibold tracking-[-0.05em]">{total}</p>
+          <p className="theme-muted mt-1 text-xs uppercase tracking-[0.18em]">clientes ativos</p>
         </div>
+      </div>
 
-        <div className="space-y-3">
-          {data.map((item) => (
-            <div key={item.name} className="theme-surface rounded-[18px] border px-4 py-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="theme-text truncate text-base font-semibold">{item.name}</span>
-                </div>
-                <span className="theme-text text-2xl font-semibold tracking-[-0.04em]">{item.value}</span>
+      <div className="space-y-3">
+        {data.map((item) => (
+          <div key={item.name} className="theme-surface rounded-[18px] border px-4 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="theme-text truncate text-base font-semibold">{item.name}</span>
               </div>
-              <div className="theme-border mt-4 h-2 overflow-hidden rounded-full border bg-[var(--surface-soft)]">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${total ? (item.value / total) * 100 : 0}%`, backgroundColor: item.color }}
-                />
-              </div>
+              <span className="theme-text text-2xl font-semibold tracking-[-0.04em]">{item.value}</span>
             </div>
-          ))}
-        </div>
+            <div className="theme-border mt-4 h-2 overflow-hidden rounded-full border bg-[var(--surface-soft)]">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${total ? (item.value / total) * 100 : 0}%`, backgroundColor: item.color }}
+              />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

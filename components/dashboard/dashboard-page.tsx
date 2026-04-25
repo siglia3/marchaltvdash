@@ -43,8 +43,8 @@ export function DashboardPage() {
 
         return (
           <div className="space-y-8 pb-10">
-            <SummaryCard title="Resumo da carteira">
-              <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+            <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+              <SummaryCard title="Resumo da carteira">
                 <div>
                   <div className="flex items-end gap-3">
                     <span className="theme-text text-6xl font-semibold tracking-[-0.06em]">{data.clientes_ativos}</span>
@@ -71,9 +71,15 @@ export function DashboardPage() {
                     />
                   </div>
                 </div>
+              </SummaryCard>
+
+              <SummaryCard
+                title="Status dos clientes ativos"
+                description="Distribui a base entre clientes bons, em alerta e críticos."
+              >
                 <HealthDonut data={healthPieData} />
-              </div>
-            </SummaryCard>
+              </SummaryCard>
+            </div>
 
             <div className="grid gap-4 xl:grid-cols-4">
               <MetricCard
