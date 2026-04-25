@@ -228,9 +228,9 @@ export function CustomTooltip({
     if (item.name === "LTV médio por mês") return "var(--warning-color)";
     if (item.name === "Clientes ativos") return "var(--success-color)";
     if (item.name === "Clientes") return "var(--primary-color)";
-    if (item.name === "Base") return "var(--success-color)";
-    if (item.name === "Entradas") return "var(--primary-color)";
-    if (item.name === "Saídas") return "var(--warning-color)";
+    if (item.name === "Base" || item.name === "Base ativa") return "var(--primary-color)";
+    if (item.name === "Entradas") return "var(--success-color)";
+    if (item.name === "Saídas") return "var(--danger-color)";
     if (item.name === "Bom") return "var(--success-color)";
     if (item.name === "Alerta") return "var(--warning-color)";
     if (item.name === "Crítico") return "var(--danger-color)";
@@ -1019,7 +1019,8 @@ export function ChurnByDimensionChart({
 }
 
 export function EntryExitBaseChart({
-  data
+  data,
+  compactLegend = false
 }: {
   data: Array<{
     axisLabel: string;
@@ -1028,6 +1029,7 @@ export function EntryExitBaseChart({
     entradas: number | null;
     saidas: number;
   }>;
+  compactLegend?: boolean;
 }) {
   return (
     <div className="h-[380px]">
@@ -1035,12 +1037,12 @@ export function EntryExitBaseChart({
         <ComposedChart data={data} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="entryArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgba(26, 104, 255, 0.38)" />
-              <stop offset="100%" stopColor="rgba(26, 104, 255, 0.03)" />
+              <stop offset="0%" stopColor="rgba(97, 217, 117, 0.34)" />
+              <stop offset="100%" stopColor="rgba(97, 217, 117, 0.02)" />
             </linearGradient>
             <linearGradient id="baseBarGlass" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgba(97, 217, 117, 0.9)" />
-              <stop offset="100%" stopColor="rgba(97, 217, 117, 0.3)" />
+              <stop offset="0%" stopColor="rgba(26, 104, 255, 0.9)" />
+              <stop offset="100%" stopColor="rgba(26, 104, 255, 0.28)" />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -1055,10 +1057,10 @@ export function EntryExitBaseChart({
             barSize={24}
           />
           <Area
-            type="monotone"
+            type="linear"
             dataKey="entradas"
             name="Entradas"
-            stroke="var(--primary-color)"
+            stroke="var(--success-color)"
             fill="url(#entryArea)"
             strokeWidth={3}
           />
@@ -1066,18 +1068,30 @@ export function EntryExitBaseChart({
             type="monotone"
             dataKey="saidas"
             name="Saídas"
-            stroke="var(--warning-color)"
+            stroke="var(--danger-color)"
             strokeWidth={3}
             strokeDasharray="8 6"
-            dot={{ r: 4, fill: "var(--warning-color)", stroke: "var(--surface)", strokeWidth: 2 }}
+            dot={{ r: 4, fill: "var(--danger-color)", stroke: "var(--surface)", strokeWidth: 2 }}
           />
         </ComposedChart>
       </ResponsiveContainer>
       <ChartLegendRow
         items={[
-          { label: "Base", color: "var(--success-color)", description: "Volume total de clientes ativos no início do período." },
-          { label: "Entradas", color: "var(--primary-color)", description: "Clientes que entraram no período selecionado." },
-          { label: "Saídas", color: "var(--warning-color)", description: "Clientes que saíram no período selecionado." }
+          {
+            label: "Base ativa",
+            color: "var(--primary-color)",
+            description: compactLegend ? undefined : "Volume total de clientes ativos no início do período."
+          },
+          {
+            label: "Entradas",
+            color: "var(--success-color)",
+            description: compactLegend ? undefined : "Clientes que entraram no período selecionado."
+          },
+          {
+            label: "Saídas",
+            color: "var(--danger-color)",
+            description: compactLegend ? undefined : "Clientes que saíram no período selecionado."
+          }
         ]}
       />
     </div>

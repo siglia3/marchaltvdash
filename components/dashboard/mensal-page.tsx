@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BarChart3, CalendarRange, Users } from "lucide-react";
+import { CalendarRange, TrendingDown, Users } from "lucide-react";
 import { DashboardDataPage } from "@/components/dashboard/dashboard-shell";
 import {
   ChurnByDimensionChart,
@@ -160,11 +160,16 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
     ...item,
     axisLabel: shortMonthLabel(item.mesNome)
   }));
-  const closedMonths = monthRows.filter((item) => !item.parcial && item.churn !== null);
-  const lastClosed = closedMonths[closedMonths.length - 1];
-  const averageEntries =
-    monthRows.reduce((acc: number, item) => acc + (item.entradas ?? 0), 0) / Math.max(monthRows.length, 1);
-  const latestEntries = lastClosed?.entradas ?? monthRows.at(-1)?.entradas ?? null;
+  const lastTwelveRows = monthRows.slice(-12);
+  const topEntryMonth = useMemo(
+    () => [...lastTwelveRows].sort((a, b) => (b.entradas ?? 0) - (a.entradas ?? 0))[0],
+    [lastTwelveRows]
+  );
+  const topExitMonth = useMemo(
+    () => [...lastTwelveRows].sort((a, b) => b.saidas - a.saidas)[0],
+    [lastTwelveRows]
+  );
+  const currentBase = data.clientes_ativos;
   const baseClientes = data.base_clientes_detalhada ?? [];
   const activeWithStatus = baseClientes.filter((cliente) => cliente.ativo === "Sim" && cliente.status !== "sem_status");
   const healthByNicho = Array.from(
@@ -324,31 +329,31 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
     <div className="space-y-8 pb-10">
       <div className="grid gap-3 md:grid-cols-3">
         <InsightChip
-          label="Entradas médias"
-          value={String(Math.round(averageEntries))}
-          tone="blue"
-          icon={BarChart3}
-          tooltip="Média simples de entradas mensais da série disponível em evolução_mensal."
-        />
-        <InsightChip
-          label="Último mês fechado"
-          value={lastClosed ? `${lastClosed.mes} · ${latestEntries ?? "—"} entradas` : "—"}
+          label="Maior entrada"
+          value={topEntryMonth ? topEntryMonth.tooltipLabel : "—"}
           tone="green"
           icon={CalendarRange}
-          tooltip="Mostra o último mês fechado da série e o volume de entradas registrado naquele período."
+          tooltip="Mês dos últimos 12 meses com a maior quantidade de entradas registradas na série mensal."
+        />
+        <InsightChip
+          label="Maior saída"
+          value={topExitMonth ? topExitMonth.tooltipLabel : "—"}
+          tone="red"
+          icon={TrendingDown}
+          tooltip="Mês dos últimos 12 meses com a maior quantidade de saídas registradas na série mensal."
         />
         <InsightChip
           label="Base atual"
-          value={String(data.evolucao_mensal.at(-1)?.base_inicio ?? data.clientes_ativos)}
+          value={String(currentBase)}
           tone="blue"
           icon={Users}
-          tooltip="Quantidade de clientes ativos na base mais recente da série mensal derivada da BASE_CLIENTES."
+          tooltip="Quantidade atual de clientes ativos na base, considerando o retrato mais recente da carteira."
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <SummaryCard
-          title="Entradas, saídas e base"
+          title="Entradas, saídas e base ativa"
           description="Análise o tamanho da base, entrada e saída de clientes por período."
           actions={renderPeriodControls(
             selectedChartMode,
@@ -362,7 +367,7 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
           )}
         >
           <div className="space-y-4">
-          <EntryExitBaseChart data={chartRows} />
+          <EntryExitBaseChart data={chartRows} compactLegend />
           <div className="theme-strong-surface rounded-[18px] border p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-primary">Leitura rápida</p>
             <p className="theme-text mt-2 text-sm leading-6">{chartInsight}</p>
@@ -372,7 +377,7 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
 
         <SummaryCard
           title="Entrada de clientes por origem"
-          description="Mostra, mês a mês, quais canais de origem trouxeram mais clientes para dentro da empresa."
+          description="Análise dos canais de origem que mais trouxeram clientes."
           actions={renderPeriodControls(
             selectedEntryMode,
             setSelectedEntryMode,

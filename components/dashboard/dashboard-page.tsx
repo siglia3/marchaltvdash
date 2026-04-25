@@ -131,8 +131,8 @@ export function DashboardPage() {
                   critico={data.perc_critico}
                 />
               </SummaryCard>
-              <SummaryCard title="Entradas, saídas e base" description="Análise o tamanho da base, entrada e saída de clientes por período.">
-                <EntryExitBaseChart data={overviewMonthlyRows} />
+              <SummaryCard title="Entradas, saídas e base ativa" description="Análise o tamanho da base, entrada e saída de clientes por período.">
+                <EntryExitBaseChart data={overviewMonthlyRows} compactLegend />
               </SummaryCard>
             </section>
 

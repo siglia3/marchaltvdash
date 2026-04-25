@@ -160,12 +160,6 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
 
   const selectedExit =
     monthsForYear.find((item) => item.mes === selectedMonth) ?? monthsForYear[monthsForYear.length - 1];
-  const totalSaidas = exitItems.reduce((acc, item) => acc + item.clientes.length, 0);
-  const peakMonth = exitItems.reduce<ExitItem | null>((current, item) => {
-    if (!current || item.clientes.length > current.clientes.length) return item;
-    return current;
-  }, null);
-  const latestExit = exitItems[exitItems.length - 1];
   const base = data.base_clientes_detalhada ?? [];
 
   const prepared = useMemo(() => {
@@ -270,6 +264,31 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
 
   const originRows = filterDimensionRows(churnByOrigin, originMode, originYear, originMonth);
   const nicheRows = filterDimensionRows(churnByNicho, nichoMode, nichoYear, nichoMonth);
+  const topOriginLast12 = useMemo(() => {
+    const totals = new Map<string, number>();
+    churnByOrigin.forEach((row) => {
+      Object.entries(row).forEach(([key, value]) => {
+        if (key === "mes" || key === "tooltipLabel") return;
+        totals.set(key, (totals.get(key) ?? 0) + Number(value));
+      });
+    });
+    return Array.from(totals.entries()).sort((a, b) => b[1] - a[1])[0] ?? null;
+  }, [churnByOrigin]);
+  const topNicheLast12 = useMemo(() => {
+    const totals = new Map<string, number>();
+    churnByNicho.forEach((row) => {
+      Object.entries(row).forEach(([key, value]) => {
+        if (key === "mes" || key === "tooltipLabel") return;
+        totals.set(key, (totals.get(key) ?? 0) + Number(value));
+      });
+    });
+    return Array.from(totals.entries()).sort((a, b) => b[1] - a[1])[0] ?? null;
+  }, [churnByNicho]);
+  const currentYear = String(new Date().getFullYear());
+  const yearToDateExits = useMemo(
+    () => exitItems.filter((item) => item.ano === currentYear).reduce((acc, item) => acc + item.clientes.length, 0),
+    [currentYear, exitItems]
+  );
   const clienteLookup = useMemo(
     () =>
       new Map(
@@ -351,25 +370,25 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
     <div className="space-y-8 pb-10">
       <div className="grid gap-3 md:grid-cols-3">
         <InsightChip
-          label="Total de saídas"
-          value={String(totalSaidas)}
-          tone="blue"
+          label="Nicho com maior churn"
+          value={topNicheLast12 ? `${topNicheLast12[0]} · ${topNicheLast12[1]}` : "—"}
+          tone="yellow"
           icon={CalendarRange}
-          tooltip="Soma de todos os clientes listados em saidas_por_mes ao longo da série histórica."
+          tooltip="Nicho que mais concentrou saídas nos últimos 12 meses, considerando a soma do volume mensal de churn do período."
         />
         <InsightChip
-          label="Pico mensal"
-          value={peakMonth ? `${peakMonth.label} · ${peakMonth.clientes.length}` : "—"}
+          label="Origem de maior churn"
+          value={topOriginLast12 ? `${topOriginLast12[0]} · ${topOriginLast12[1]}` : "—"}
           tone="red"
           icon={AlertTriangle}
-          tooltip="Mês com o maior número absoluto de saídas registradas."
+          tooltip="Origem que mais concentrou saídas nos últimos 12 meses, considerando a soma do volume mensal de churn do período."
         />
         <InsightChip
-          label="Último mês com saída"
-          value={latestExit ? `${latestExit.label} · ${latestExit.clientes.length}` : "—"}
-          tone="yellow"
+          label="Saídas no ano vigente"
+          value={String(yearToDateExits)}
+          tone="blue"
           icon={Clock3}
-          tooltip="Último período da série que registrou clientes na lista de saídas."
+          tooltip="Soma da quantidade de clientes que saíram ao longo do ano vigente, agregando todos os meses fechados e em aberto desse ano."
         />
       </div>
 
