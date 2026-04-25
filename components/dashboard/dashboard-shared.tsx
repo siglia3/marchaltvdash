@@ -320,32 +320,42 @@ export function HealthDonut({
 }: {
   data: Array<{ name: string; value: number; color: string }>;
 }) {
+  const RADIAN = Math.PI / 180;
+
   return (
     <div className="flex flex-col items-center gap-5">
-      <div className="relative mx-auto h-[260px] w-[260px]">
+      <div className="relative mx-auto h-[280px] w-[280px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
-              innerRadius={72}
-              outerRadius={110}
-              stroke="transparent"
-              paddingAngle={3}
+              innerRadius={14}
+              outerRadius={118}
+              stroke="var(--surface)"
+              strokeWidth={6}
+              paddingAngle={2}
               labelLine={false}
-              label={({ percent, payload, x, y }) => {
-                if (!percent || !payload) return null;
-                const labelColor = payload.name === "Alerta" ? "#0f172a" : "#ffffff";
+              label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                if (!percent || !cx || !cy || !outerRadius || !innerRadius) return null;
+                const radius = innerRadius + (outerRadius - innerRadius) * 0.58;
+                const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
                 return (
                   <text
                     x={x}
                     y={y}
-                    fill={labelColor}
+                    fill="#ffffff"
                     textAnchor="middle"
                     dominantBaseline="central"
-                    fontSize={18}
+                    fontSize={20}
                     fontWeight={700}
+                    paintOrder="stroke"
+                    stroke="rgba(10,14,26,0.45)"
+                    strokeWidth={5}
+                    strokeLinejoin="round"
                   >
                     {`${Math.round(percent * 100)}%`}
                   </text>
