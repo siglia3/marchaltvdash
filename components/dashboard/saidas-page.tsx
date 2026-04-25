@@ -402,8 +402,8 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
       {!!data.base_clientes_detalhada?.length && (
         <div className="grid gap-4 xl:grid-cols-2">
           <SummaryCard
-            title="Churn por origem de cliente"
-            description="Mostra quais origens concentram mais saídas em cada mês."
+            title="Churn por origem"
+            description="Mostra quais origens concentram mais saídas."
             actions={renderChartActions(originMode, setOriginMode, originYear, setOriginYear, originMonth, setOriginMonth, originYears, originMonths)}
           >
             <div className="space-y-4">
@@ -417,7 +417,7 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
 
           <SummaryCard
             title="Churn por nicho"
-            description="Mostra quais nichos concentram mais saídas nos últimos 12 meses."
+            description="Mostra quais nichos concentram mais saídas."
             actions={renderChartActions(nichoMode, setNichoMode, nichoYear, setNichoYear, nichoMonth, setNichoMonth, nicheYears, nicheMonths)}
           >
             <div className="space-y-4">

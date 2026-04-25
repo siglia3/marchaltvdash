@@ -80,7 +80,7 @@ export function MensalPage() {
   return (
     <DashboardDataPage
       title="Evolução mensal"
-      description="Acompanhe a entrada de clientes, a composição por origem e nicho e a evolução da base ao longo do tempo."
+      description="Acompanhe a composição e evolução da base ao longo dos meses."
     >
       {(data) => <MensalContent data={data} />}
     </DashboardDataPage>

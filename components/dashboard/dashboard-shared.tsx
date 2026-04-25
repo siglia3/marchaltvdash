@@ -587,7 +587,7 @@ export function SuccessGaugeCard({
   alerta: number;
   critico: number;
 }) {
-  const gaugePath = "M 24 156 A 76 76 0 0 1 176 156";
+  const gaugePath = "M 24 134 A 76 76 0 0 1 176 134";
   const dominant =
     bom >= 45 ? { value: bom, tone: "green" as const } : alerta >= critico
       ? { value: alerta, tone: "yellow" as const }
@@ -842,17 +842,17 @@ export function MonthExitBar({ data }: { data: SaidasPorMes[] }) {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={monthData} margin={{ top: 8, right: 0, left: -16, bottom: 0 }}>
           <defs>
-            <linearGradient id="exitBarBlueLight" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#9fc6ff" />
-              <stop offset="100%" stopColor="#64a7fe" />
+            <linearGradient id="exitBarRedLight" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#fca5a5" />
+              <stop offset="100%" stopColor="#fb7185" />
             </linearGradient>
-            <linearGradient id="exitBarBlueMid" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#1a68ff" />
-              <stop offset="100%" stopColor="#64a7fe" />
+            <linearGradient id="exitBarRedMid" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#fb7185" />
+              <stop offset="100%" stopColor="#ef4444" />
             </linearGradient>
-            <linearGradient id="exitBarBlueDark" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#0d1732" />
-              <stop offset="100%" stopColor="#1a68ff" />
+            <linearGradient id="exitBarRedDark" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#7f1d1d" />
+              <stop offset="100%" stopColor="#dc2626" />
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -865,10 +865,10 @@ export function MonthExitBar({ data }: { data: SaidasPorMes[] }) {
                 key={`${entry.tooltipLabel}-${entry.saidas}`}
                 fill={
                   entry.saidas / maxSaidas >= 0.75
-                    ? "url(#exitBarBlueDark)"
+                    ? "url(#exitBarRedDark)"
                     : entry.saidas / maxSaidas >= 0.4
-                      ? "url(#exitBarBlueMid)"
-                      : "url(#exitBarBlueLight)"
+                      ? "url(#exitBarRedMid)"
+                      : "url(#exitBarRedLight)"
                 }
               />
             ))}
@@ -876,8 +876,9 @@ export function MonthExitBar({ data }: { data: SaidasPorMes[] }) {
               dataKey="churn"
               position="top"
               formatter={(value: number | null | undefined) => formatPercent(value)}
-              fill="var(--muted-color)"
+              fill="var(--danger-color)"
               fontSize={11}
+              fontWeight={700}
               offset={8}
             />
           </Bar>
