@@ -34,7 +34,7 @@ export function GestoresPage() {
                 icon={Trophy}
               />
               <InsightChip label="Média da equipe" value={formatPercent(avgSuccess)} tone="blue" icon={BarChart3} />
-              <InsightChip label="Gestores ativos" value={String(gestores.length)} icon={Users} />
+              <InsightChip label="Gestores ativos" value={String(gestores.length)} tone="blue" icon={Users} />
             </div>
 
             <div className="grid gap-4 2xl:grid-cols-2">

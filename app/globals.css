@@ -26,24 +26,24 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --app-bg: #0d0f14;
-  --surface: #161a23;
-  --surface-soft: #111318;
-  --surface-strong: #1a2233;
-  --sidebar-surface: #111318;
-  --border-color: #1e2333;
-  --text-color: #f8fafc;
-  --muted-color: #8b92a5;
-  --nav-hover: #181c25;
-  --nav-active: rgba(36, 107, 255, 0.14);
-  --icon-surface: #1a1f2b;
-  --shadow-color: rgba(2, 8, 23, 0.32);
-  --tooltip-bg: rgba(18, 24, 38, 0.98);
-  --tooltip-border: rgba(72, 124, 255, 0.28);
-  --primary-color: #4f8cff;
-  --success-color: #22c55e;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
+  --app-bg: #050811;
+  --surface: #0a0e1a;
+  --surface-soft: #151b2d;
+  --surface-strong: #26304a;
+  --sidebar-surface: #0a0e1a;
+  --border-color: #26304a;
+  --text-color: #ffffff;
+  --muted-color: #a8b2d2;
+  --nav-hover: #151b2d;
+  --nav-active: rgba(26, 104, 255, 0.18);
+  --icon-surface: #151b2d;
+  --shadow-color: rgba(5, 8, 17, 0.36);
+  --tooltip-bg: rgba(10, 14, 26, 0.98);
+  --tooltip-border: rgba(26, 104, 255, 0.28);
+  --primary-color: #1a68ff;
+  --success-color: #61d975;
+  --warning-color: #ffc603;
+  --danger-color: #ff2d45;
 }
 
 .chip-green {
@@ -71,26 +71,26 @@
 }
 
 [data-theme="dark"] .chip-green {
-  border-color: #1f5133;
-  background: rgba(22, 163, 74, 0.14);
+  border-color: #74d183;
+  background: #102223;
   color: #f8fafc;
 }
 
 [data-theme="dark"] .chip-blue {
-  border-color: #28498a;
-  background: rgba(36, 107, 255, 0.14);
+  border-color: #64a7fe;
+  background: #0d1732;
   color: #f8fafc;
 }
 
 [data-theme="dark"] .chip-yellow {
-  border-color: #6b4b12;
-  background: rgba(217, 119, 6, 0.16);
+  border-color: #efc42c;
+  background: #202020;
   color: #f8fafc;
 }
 
 [data-theme="dark"] .chip-red {
-  border-color: #6b1f28;
-  background: rgba(220, 38, 38, 0.16);
+  border-color: #fe576b;
+  background: #3c1820;
   color: #f8fafc;
 }
 

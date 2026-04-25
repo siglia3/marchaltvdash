@@ -265,10 +265,10 @@ export function MetricCard({
   } as const;
 
   const cardTone = {
-    blue: "border-[#2d5eff]/25 bg-[#1d2740]",
-    green: "border-[#2d7a43]/35 bg-[#1a2624]",
-    yellow: "border-[#8e6420]/45 bg-[#2a2924]",
-    red: "border-[#6a2835]/45 bg-[#26212a]"
+    blue: "border-[#64a7fe] bg-[#0d1732]",
+    green: "border-[#74d183] bg-[#102223]",
+    yellow: "border-[#efc42c] bg-[#202020]",
+    red: "border-[#fe576b] bg-[#3c1820]"
   } as const;
 
   const card = (

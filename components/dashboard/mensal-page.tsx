@@ -135,6 +135,7 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
         <InsightChip
           label="Base atual"
           value={String(filteredRows.at(-1)?.base_inicio ?? data.clientes_ativos)}
+          tone="blue"
           icon={Users}
         />
       </div>

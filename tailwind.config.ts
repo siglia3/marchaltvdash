@@ -15,10 +15,10 @@ const config: Config = {
         sidebar: "#ffffff",
         muted: "#6b7280",
         stroke: "#e5eaf3",
-        primary: "#246bff",
-        success: "#16a34a",
-        warning: "#d97706",
-        danger: "#dc2626"
+        primary: "#1A68FF",
+        success: "#61D975",
+        warning: "#FFC603",
+        danger: "#FF2D45"
       },
       boxShadow: {
         panel: "0 16px 40px rgba(15, 23, 42, 0.06)"

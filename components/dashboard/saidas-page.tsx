@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, CalendarRange, Clock3 } from "lucide-react";
 import { DashboardDataPage } from "@/components/dashboard/dashboard-shell";
 import { InsightChip, MonthExitBar, SummaryCard, getChurnTone } from "@/components/dashboard/dashboard-shared";
 import { Badge } from "@/components/ui/badge";
@@ -80,13 +81,14 @@ function SaidasContent({ data }: { data: { saidas_por_mes: ExitItem[] | any[] } 
   return (
     <div className="space-y-8 pb-10">
       <div className="grid gap-3 md:grid-cols-3">
-        <InsightChip label="Meses com saídas" value={String(data.saidas_por_mes.length)} />
+        <InsightChip label="Meses com saídas" value={String(data.saidas_por_mes.length)} tone="blue" icon={CalendarRange} />
         <InsightChip
           label="Maior volume"
           value={exitItems.length ? `${Math.max(...exitItems.map((item) => item.clientes.length))} saídas` : "—"}
           tone="red"
+          icon={AlertTriangle}
         />
-        <InsightChip label="Último período" value={exitItems.at(-1)?.label ?? "—"} tone="blue" />
+        <InsightChip label="Último período" value={exitItems.at(-1)?.label ?? "—"} tone="yellow" icon={Clock3} />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
