@@ -5,31 +5,37 @@ import Link from "next/link";
 import type { Route } from "next";
 import type { LucideIcon } from "lucide-react";
 import {
+  ArrowUpRight,
+  CircleAlert,
+  CircleHelp
+} from "lucide-react";
+import {
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
   ComposedChart,
-  Legend,
+  Line,
   Pie,
   PieChart,
-  Line,
   ResponsiveContainer,
+  Scatter,
+  ScatterChart,
   Tooltip,
   XAxis,
-  YAxis
+  YAxis,
+  ZAxis
 } from "recharts";
-import { ArrowUpRight, CircleAlert } from "lucide-react";
-import { ClientesDashboardData, EvolucaoMensal, GestorMetric, SaidasPorMes } from "@/lib/types";
-import { cn, formatPercent, getChurnColor } from "@/lib/utils";
+import { cn, formatPercent } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { BaseClienteDetalhado, EvolucaoMensal, GestorMetric, SaidasPorMes } from "@/lib/types";
 
 export const statusColors = {
-  bons: "var(--success-color)",
+  bom: "var(--success-color)",
   alerta: "var(--warning-color)",
   critico: "var(--danger-color)"
 };
@@ -40,6 +46,34 @@ const healthGradient = {
   yellow: "from-amber-400/25 via-yellow-300/10 to-transparent",
   red: "from-rose-400/25 via-red-300/10 to-transparent"
 };
+
+const cardTone = {
+  blue: "border-[#64a7fe] bg-[#0d1732] hover:border-[#64a7fe] hover:shadow-[0_0_0_1px_rgba(100,167,254,0.26)]",
+  green: "border-[#74d183] bg-[#102223] hover:border-[#74d183] hover:shadow-[0_0_0_1px_rgba(116,209,131,0.26)]",
+  yellow: "border-[#efc42c] bg-[#202020] hover:border-[#efc42c] hover:shadow-[0_0_0_1px_rgba(239,196,44,0.26)]",
+  red: "border-[#fe576b] bg-[#3c1820] hover:border-[#fe576b] hover:shadow-[0_0_0_1px_rgba(254,87,107,0.26)]"
+} as const;
+
+const metricTone = {
+  blue: "text-primary",
+  green: "text-success",
+  yellow: "text-warning",
+  red: "text-danger"
+} as const;
+
+const badgeTone = {
+  blue: "blue",
+  green: "green",
+  yellow: "yellow",
+  red: "red"
+} as const;
+
+const iconTone = {
+  blue: "var(--primary-color)",
+  green: "var(--success-color)",
+  yellow: "var(--warning-color)",
+  red: "var(--danger-color)"
+} as const;
 
 export function shortMonthLabel(month: string) {
   const base = month.split("/")[0];
@@ -96,14 +130,6 @@ export function DashboardSkeleton() {
           </Card>
         ))}
       </div>
-      <div className="grid gap-4 2xl:grid-cols-2">
-        {Array.from({ length: 2 }).map((_, index) => (
-          <Card key={index} className="p-5">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="mt-5 h-72 w-full" />
-          </Card>
-        ))}
-      </div>
     </div>
   );
 }
@@ -129,13 +155,70 @@ export function DashboardErrorState({
   );
 }
 
+export function HoverInfo({ text }: { text: string }) {
+  return (
+    <span className="group relative inline-flex items-center">
+      <CircleHelp className="theme-muted h-4 w-4 cursor-help" />
+      <span className="pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden w-[260px] -translate-x-1/2 rounded-[16px] border bg-[var(--tooltip-bg)] p-3 text-left text-xs font-normal leading-5 text-[var(--text-color)] shadow-[0_18px_40px_var(--shadow-color)] group-hover:block">
+        {text}
+      </span>
+    </span>
+  );
+}
+
+export function LabelWithHelp({
+  label,
+  tooltip,
+  className
+}: {
+  label: string;
+  tooltip?: string;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex items-center gap-2", className)}>
+      <span>{label}</span>
+      {tooltip ? <HoverInfo text={tooltip} /> : null}
+    </div>
+  );
+}
+
+export function ChartLegendRow({
+  items
+}: {
+  items: Array<{ label: string; color: string; description?: string }>;
+}) {
+  return (
+    <div className="mb-4 flex flex-wrap gap-3">
+      {items.map((item) => (
+        <div key={item.label} className="theme-soft-surface flex items-start gap-2 rounded-full px-3 py-2">
+          <span
+            className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: item.color }}
+          />
+          <div className="min-w-0">
+            <p className="theme-text text-xs font-semibold">{item.label}</p>
+            {item.description ? <p className="theme-muted text-[11px]">{item.description}</p> : null}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function CustomTooltip({
   active,
   payload,
   label
 }: {
   active?: boolean;
-  payload?: Array<{ name: string; value: number; color?: string; fill?: string; payload?: { tooltipLabel?: string; color?: string } }>;
+  payload?: Array<{
+    name: string;
+    value: number;
+    color?: string;
+    fill?: string;
+    payload?: Record<string, any>;
+  }>;
   label?: string;
 }) {
   if (!active || !payload?.length) return null;
@@ -145,24 +228,32 @@ export function CustomTooltip({
     <div className="theme-surface rounded-[18px] border p-3">
       <p className="theme-text mb-2 text-sm font-semibold">{tooltipLabel}</p>
       <div className="space-y-1.5">
-        {payload.map((item) => (
-          <div key={`${item.name}-${item.value}`} className="flex items-center justify-between gap-8 text-xs">
-            <span className="theme-muted flex items-center gap-2">
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: item.color ?? item.fill ?? item.payload?.color ?? "#93c5fd" }}
-              />
-              {item.name}
-            </span>
-            <span className="theme-text font-semibold">
-              {item.name.toLowerCase().includes("churn") || item.name.includes("%")
-                ? formatPercent(item.value)
-                : item.name.toLowerCase().includes("ltv")
-                  ? `${item.value} meses`
-                  : item.value}
-            </span>
-          </div>
-        ))}
+        {payload.map((item) => {
+          const rawName = item.name.toLowerCase();
+          const isPercent = rawName.includes("churn") || rawName.includes("taxa") || item.name.includes("%");
+          const isLtv = rawName.includes("ltv");
+          const formatter = item.payload?.tooltipFormatter;
+          const valueText = formatter
+            ? formatter(item.value)
+            : isPercent
+              ? formatPercent(item.value)
+              : isLtv
+                ? `${item.value} meses`
+                : item.value;
+
+          return (
+            <div key={`${item.name}-${item.value}`} className="flex items-center justify-between gap-8 text-xs">
+              <span className="theme-muted flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: item.color ?? item.fill ?? item.payload?.color ?? "#93c5fd" }}
+                />
+                {item.name}
+              </span>
+              <span className="theme-text font-semibold">{valueText}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -172,12 +263,14 @@ export function InsightChip({
   label,
   value,
   tone = "default",
-  icon: Icon
+  icon: Icon,
+  tooltip
 }: {
   label: string;
   value: string;
   tone?: "default" | "blue" | "green" | "yellow" | "red";
   icon?: LucideIcon;
+  tooltip?: string;
 }) {
   const toneClasses = {
     default: "theme-surface theme-text",
@@ -208,14 +301,17 @@ export function InsightChip({
           style={{ color: iconColors[tone], opacity: 0.18 }}
         />
       ) : null}
-      <p
-        className={cn(
-          "max-w-[16rem] text-[12px] font-medium uppercase tracking-[0.18em]",
-          tone === "default" || tone === "blue" ? "theme-text" : "text-inherit"
-        )}
-      >
-        {label}
-      </p>
+      <div className="relative z-10 flex max-w-[18rem] items-center gap-2">
+        <p
+          className={cn(
+            "text-[12px] font-medium uppercase tracking-[0.18em]",
+            tone === "default" || tone === "blue" ? "theme-text" : "text-inherit"
+          )}
+        >
+          {label}
+        </p>
+        {tooltip ? <HoverInfo text={tooltip} /> : null}
+      </div>
       <p
         className={cn(
           "relative z-10 mt-8 max-w-[18rem] pr-10 text-[28px] font-semibold leading-tight tracking-[-0.04em]",
@@ -245,55 +341,24 @@ export function MetricCard({
   tone: keyof typeof healthGradient;
   href?: Route;
 }) {
-  const toneClasses = {
-    blue: "text-primary",
-    green: "text-success",
-    yellow: "text-warning",
-    red: "text-danger"
-  } as const;
-
-  const badgeTone = {
-    blue: "blue",
-    green: "green",
-    yellow: "yellow",
-    red: "red"
-  } as const;
-
-  const iconColors = {
-    blue: "var(--primary-color)",
-    green: "var(--success-color)",
-    yellow: "var(--warning-color)",
-    red: "var(--danger-color)"
-  } as const;
-
-  const cardTone = {
-    blue: "border-[#64a7fe] bg-[#0d1732]",
-    green: "border-[#74d183] bg-[#102223]",
-    yellow: "border-[#efc42c] bg-[#202020]",
-    red: "border-[#fe576b] bg-[#3c1820]"
-  } as const;
-
   const card = (
     <Card
       className={cn(
-        "relative overflow-hidden p-6 transition duration-200",
-        cardTone[tone],
-        href ? "hover:-translate-y-0.5" : ""
+        "relative overflow-hidden p-6 transition duration-200 hover:-translate-y-0.5",
+        cardTone[tone]
       )}
     >
       <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50", healthGradient[tone])} />
       <Icon
         className="pointer-events-none absolute right-5 top-6 h-20 w-20"
-        style={{ color: iconColors[tone], opacity: 0.2 }}
+        style={{ color: iconTone[tone], opacity: 0.22 }}
       />
       <div className="relative">
         <CardHeader className="pr-16">
-          <div>
-            <p className="theme-muted text-[12px] font-medium uppercase tracking-[0.18em]">{title}</p>
-          </div>
+          <p className="theme-muted text-[12px] font-medium uppercase tracking-[0.18em]">{title}</p>
         </CardHeader>
         <CardContent className="mt-6 space-y-3">
-          <div className={cn("metric-number font-bold", toneClasses[tone])}>{value}</div>
+          <div className={cn("metric-number font-bold", metricTone[tone])}>{value}</div>
           <p className="theme-muted max-w-[18rem] text-sm">{description}</p>
           <Badge tone={badgeTone[tone]} className="w-fit">
             <ArrowUpRight className="h-3 w-3" />
@@ -304,14 +369,12 @@ export function MetricCard({
     </Card>
   );
 
-  if (!href) {
-    return card;
-  }
-
-  return (
+  return href ? (
     <Link href={href} className="block focus-visible:outline-none">
       {card}
     </Link>
+  ) : (
+    card
   );
 }
 
@@ -320,11 +383,11 @@ export function HealthDonut({
 }: {
   data: Array<{ name: string; value: number; color: string }>;
 }) {
-  const RADIAN = Math.PI / 180;
+  const total = data.reduce((acc, item) => acc + item.value, 0);
 
   return (
-    <div className="flex flex-col items-center gap-5">
-      <div className="relative mx-auto h-[280px] w-[280px]">
+    <div className="flex flex-col items-center">
+      <div className="h-[320px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -332,29 +395,26 @@ export function HealthDonut({
               dataKey="value"
               nameKey="name"
               innerRadius={0}
-              outerRadius={118}
+              outerRadius={126}
               stroke="var(--surface)"
-              strokeWidth={6}
+              strokeWidth={5}
               paddingAngle={2}
               labelLine={false}
               label={({ cx, cy, midAngle, outerRadius, percent, payload }) => {
-                if (!percent || !cx || !cy || !outerRadius) return null;
-                const radius = outerRadius * 0.58;
-                const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                const labelColor = payload?.name === "Alerta" ? "#0f172a" : "#ffffff";
+                if (!percent || percent < 0.1 || !cx || !cy || !outerRadius) return null;
+                var radius = outerRadius * 0.62;
+                var x = cx + radius * Math.cos((-midAngle * Math.PI) / 180);
+                var y = cy + radius * Math.sin((-midAngle * Math.PI) / 180);
+                var labelColor = payload?.name === "Alerta" ? "#0f172a" : "#ffffff";
 
                 return (
-                  <text
-                    x={x}
-                    y={y}
-                    fill={labelColor}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fontSize={20}
-                    fontWeight={700}
-                  >
-                    {`${Math.round(percent * 100)}%`}
+                  <text x={x} y={y} textAnchor="middle" dominantBaseline="middle" fill={labelColor}>
+                    <tspan x={x} dy="-0.35em" fontSize="13" fontWeight={600}>
+                      {payload?.name}
+                    </tspan>
+                    <tspan x={x} dy="1.35em" fontSize="20" fontWeight={700}>
+                      {formatPercent(percent * 100)}
+                    </tspan>
                   </text>
                 );
               }}
@@ -363,19 +423,14 @@ export function HealthDonut({
                 <Cell key={entry.name} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip
+              content={<CustomTooltip />}
+              formatter={(value: number) => value}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>
-
-      <div className="flex flex-wrap items-center justify-center gap-4">
-        {data.map((item) => (
-          <div key={item.name} className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-            <span className="theme-muted text-sm font-medium">{item.name}</span>
-          </div>
-        ))}
-      </div>
+      <p className="theme-muted text-sm">Base considerada: {total} clientes com status preenchido.</p>
     </div>
   );
 }
@@ -393,171 +448,77 @@ export function OrigemMixCard({
     );
   }
 
-  var formattedData =
-    data.length <= 3
-      ? data
-      : data.slice(0, 2).concat([
-          {
-            name: "Outras origens",
-            value: data.slice(2).reduce(function (acc, item) {
-              return acc + item.value;
-            }, 0),
-            percent: data.slice(2).reduce(function (acc, item) {
-              return acc + item.percent;
-            }, 0),
-            color: "var(--muted-color)"
-          }
-        ]);
+  const palette = ["var(--origin-ring-1)", "var(--origin-ring-2)", "var(--origin-ring-3)", "var(--origin-ring-4)"];
+  const normalized = data.slice(0, 4).map((item, index) => ({
+    ...item,
+    color: palette[index] || item.color
+  }));
 
-  var segmentPalette = [
-    "var(--origin-ring-1)",
-    "var(--origin-ring-2)",
-    "var(--origin-ring-3)",
-    "var(--origin-ring-4)"
-  ];
-  formattedData = formattedData.map(function (item, index) {
-    return {
-      name: item.name,
-      value: item.value,
-      percent: item.percent,
-      color: segmentPalette[index] || segmentPalette[segmentPalette.length - 1]
-    };
-  });
-
-  var cumulative = 0;
-  var annotatedData = formattedData.map(function (item) {
-    var start = cumulative;
+  let cumulative = 0;
+  const annotated = normalized.map((item) => {
+    const start = cumulative;
     cumulative += item.percent;
-    return {
-      name: item.name,
-      value: item.value,
-      percent: item.percent,
-      color: item.color,
-      start: start,
-      end: cumulative
-    };
+    return { ...item, start };
   });
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="hidden sm:block">
-        <div className="mx-auto w-full max-w-[760px]">
-          <div className="relative h-[146px]">
-            {annotatedData.map((item, index) => {
-              const markerLeft =
-                index === annotatedData.length - 1
-                  ? Math.min(item.start, 84)
-                  : Math.max(item.start, index === 0 ? 0 : 4);
-
-              return (
+    <div className="space-y-6">
+      <div className="hidden md:block">
+        <div className="relative mx-auto max-w-[760px]">
+          <div className="relative h-[168px]">
+            {annotated.map((item) => (
+              <div
+                key={`${item.name}-callout`}
+                className="absolute top-0 flex flex-col items-start"
+                style={{ left: `${Math.min(item.start, 90)}%` }}
+              >
                 <div
-                  key={`${item.name}-marker`}
-                  className="absolute top-0 flex flex-col items-start"
-                  style={{ left: `${markerLeft}%` }}
+                  className="min-w-[132px] rounded-[18px] border px-3 py-2 shadow-sm"
+                  style={{
+                    backgroundColor: "var(--surface)",
+                    borderColor: item.color
+                  }}
                 >
-                  <div
-                    className="rounded-[16px] px-3 py-1 text-sm font-semibold shadow-sm"
-                    style={{
-                      color: item.color,
-                      backgroundColor: "var(--surface)",
-                      boxShadow: "0 8px 20px rgba(0,0,0,0.08)"
-                    }}
-                  >
+                  <p className="text-base font-semibold" style={{ color: item.color }}>
                     {formatPercent(item.percent)}
-                  </div>
-                  <div className="theme-border mt-2 h-[58px] w-px border-l" />
-                  <span
-                    className="h-3 w-3 rounded-full border-2"
-                    style={{
-                      backgroundColor: item.color,
-                      borderColor: "var(--surface)"
-                    }}
-                  />
+                  </p>
+                  <p className="theme-text mt-1 text-sm font-semibold">{item.name}</p>
+                  <p className="theme-muted mt-1 text-xs">{item.value} clientes</p>
                 </div>
-              );
-            })}
+                <div className="mt-2 h-[44px] w-px" style={{ backgroundColor: "var(--border-color)" }} />
+                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+              </div>
+            ))}
 
-            <div className="theme-strong-surface absolute bottom-0 left-0 right-0 h-[64px] overflow-hidden rounded-full">
-              <div className="flex h-full items-center">
-                {annotatedData.map((item, index) => (
-                  <div
-                    key={item.name}
-                    className={cn(
-                      "h-full",
-                      index === 0 && "rounded-l-full",
-                      index === annotatedData.length - 1 && "rounded-r-full"
-                    )}
-                    style={{
-                      width: `${item.percent}%`,
-                      backgroundColor: item.color
-                    }}
-                  />
+            <div className="theme-strong-surface absolute bottom-0 left-0 right-0 h-[30px] overflow-hidden rounded-full">
+              <div className="flex h-full w-full overflow-hidden rounded-full">
+                {annotated.map((item) => (
+                  <div key={item.name} style={{ width: `${item.percent}%`, backgroundColor: item.color }} />
                 ))}
               </div>
             </div>
           </div>
-
-          <div
-            className={cn(
-              "mt-5 grid gap-5",
-              annotatedData.length === 1
-                ? "grid-cols-1"
-                : annotatedData.length === 2
-                  ? "grid-cols-2"
-                  : "grid-cols-3"
-            )}
-          >
-            {annotatedData.map((item) => (
-              <div key={item.name} className="min-w-0">
-                <p className="theme-text text-[clamp(1.35rem,2.2vw,1.75rem)] font-semibold tracking-[-0.04em]">
-                  {item.value.toLocaleString("pt-BR")}
-                </p>
-                <div className="mt-2 flex items-start gap-2">
-                  <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-                  <div className="min-w-0">
-                    <p
-                      className="theme-text overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-medium sm:text-sm"
-                      title={item.name}
-                    >
-                      {item.name}
-                    </p>
-                    <p className="theme-muted text-xs">{formatPercent(item.percent)} da base</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
-      <div className="space-y-4 sm:hidden">
-        {annotatedData.map((item) => (
-          <div key={`${item.name}-mobile`} className="theme-soft-surface rounded-[20px] p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-                  <p className="theme-text truncate text-sm font-semibold">{item.name}</p>
-                </div>
-                <p className="theme-muted mt-1 text-xs">{formatPercent(item.percent)} da base</p>
-              </div>
-              <div className="text-right">
-                <p className="theme-text text-2xl font-semibold tracking-[-0.05em]">
-                  {item.value.toLocaleString("pt-BR")}
+      <div className="grid gap-3 md:hidden">
+        {annotated.map((item) => (
+          <div key={`${item.name}-mobile`} className="theme-soft-surface rounded-[18px] p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-base font-semibold" style={{ color: item.color }}>
+                  {formatPercent(item.percent)}
                 </p>
-                <p className="theme-muted text-xs uppercase tracking-[0.14em]">clientes</p>
+                <p className="theme-text text-sm font-semibold">{item.name}</p>
+                <p className="theme-muted text-xs">{item.value} clientes</p>
               </div>
             </div>
-            <div className="theme-border mt-4 h-3 overflow-hidden rounded-full bg-[var(--origin-track)]">
-              <div
-                className="h-full rounded-full"
-                style={{ width: `${item.percent}%`, backgroundColor: item.color }}
-              />
+            <div className="theme-border mt-3 h-3 overflow-hidden rounded-full bg-[var(--origin-track)]">
+              <div className="h-full rounded-full" style={{ width: `${item.percent}%`, backgroundColor: item.color }} />
             </div>
           </div>
         ))}
       </div>
-
     </div>
   );
 }
@@ -567,57 +528,38 @@ export function GestorCrossMetricSummary({ gestores }: { gestores: GestorMetric[
     .sort((a, b) => b.taxa_sucesso - a.taxa_sucesso)
     .map((gestor) => ({
       gestor: gestor.nome,
-      "Taxa de sucesso": gestor.taxa_sucesso,
-      "LTV médio por mês": gestor.ltv_medio
+      taxa_sucesso: gestor.taxa_sucesso,
+      ltv_medio: gestor.ltv_medio,
+      tooltipLabel: gestor.nome
     }));
 
   return (
-    <div className="h-[320px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={chartData} margin={{ top: 8, right: 10, left: -10, bottom: 0 }}>
-          <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis
-            dataKey="gestor"
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "var(--muted-color)", fontSize: 12 }}
-          />
-          <YAxis
-            yAxisId="left"
-            axisLine={false}
-            tickLine={false}
-            domain={[0, 100]}
-            tick={{ fill: "var(--muted-color)", fontSize: 12 }}
-            tickFormatter={(value) => `${value}%`}
-          />
-          <YAxis
-            yAxisId="right"
-            orientation="right"
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: "var(--muted-color)", fontSize: 12 }}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
-          <Bar
-            yAxisId="left"
-            dataKey="Taxa de sucesso"
-            name="Taxa de sucesso"
-            fill="var(--primary-color)"
-            radius={[10, 10, 0, 0]}
-            barSize={28}
-          />
-          <Line
-            yAxisId="right"
-            type="monotone"
-            dataKey="LTV médio por mês"
-            name="LTV médio por mês"
-            stroke="var(--success-color)"
-            strokeWidth={3}
-            dot={{ r: 4, fill: "var(--success-color)" }}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+    <div>
+      <ChartLegendRow
+        items={[
+          { label: "Taxa de sucesso", color: "var(--primary-color)", description: "Percentual de clientes Bom na carteira ativa." },
+          { label: "LTV médio por mês", color: "var(--success-color)", description: "Tempo médio de permanência em meses." }
+        ]}
+      />
+      <div className="h-[320px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={chartData} margin={{ top: 8, right: 10, left: -10, bottom: 0 }}>
+            <defs>
+              <linearGradient id="crossBlue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--primary-color)" stopOpacity={1} />
+                <stop offset="100%" stopColor="#64a7fe" stopOpacity={0.72} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <XAxis dataKey="gestor" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+            <YAxis yAxisId="left" axisLine={false} tickLine={false} domain={[0, 100]} tick={{ fill: "var(--muted-color)", fontSize: 12 }} tickFormatter={(value) => `${value}%`} />
+            <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar yAxisId="left" dataKey="taxa_sucesso" name="Taxa de sucesso" fill="url(#crossBlue)" radius={[10, 10, 0, 0]} barSize={28} />
+            <Line yAxisId="right" type="monotone" dataKey="ltv_medio" name="LTV médio por mês" stroke="var(--success-color)" strokeWidth={3} dot={{ r: 4, fill: "var(--success-color)" }} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -625,7 +567,7 @@ export function GestorCrossMetricSummary({ gestores }: { gestores: GestorMetric[
 export function GestorStatusCard({ gestores }: { gestores: GestorMetric[] }) {
   const chartData = gestores.map((gestor) => ({
     nome: gestor.nome,
-    bons: gestor.bons,
+    bom: gestor.bons,
     alerta: gestor.alerta,
     critico: gestor.critico
   }));
@@ -635,30 +577,41 @@ export function GestorStatusCard({ gestores }: { gestores: GestorMetric[] }) {
       <CardHeader>
         <div>
           <CardTitle>Distribuição de status</CardTitle>
-          <p className="theme-muted mt-1 text-sm">
-            Mostra quantos clientes estão bem, em atenção e em risco por gestor.
-          </p>
+          <p className="theme-muted mt-1 text-sm">Mostra quantos clientes estão bem, em atenção e em risco por gestor.</p>
         </div>
       </CardHeader>
       <CardContent className="mt-5">
-        <div className="h-[320px]">
+        <ChartLegendRow
+          items={[
+            { label: "Bom", color: "var(--success-color)" },
+            { label: "Alerta", color: "var(--warning-color)" },
+            { label: "Crítico", color: "var(--danger-color)" }
+          ]}
+        />
+        <div className="h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 0, left: 6, bottom: 0 }}>
+              <defs>
+                <linearGradient id="statusGradientGreen" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#1f8f4d" />
+                  <stop offset="100%" stopColor="#61d975" />
+                </linearGradient>
+                <linearGradient id="statusGradientYellow" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#d88a05" />
+                  <stop offset="100%" stopColor="#ffc603" />
+                </linearGradient>
+                <linearGradient id="statusGradientRed" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#d11837" />
+                  <stop offset="100%" stopColor="#ff4c61" />
+                </linearGradient>
+              </defs>
               <CartesianGrid horizontal={false} strokeDasharray="3 3" />
               <XAxis type="number" hide />
-              <YAxis
-                dataKey="nome"
-                type="category"
-                width={88}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "var(--muted-color)", fontSize: 12 }}
-              />
+              <YAxis dataKey="nome" type="category" width={98} axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar dataKey="bons" stackId="status" fill={statusColors.bons} radius={[10, 0, 0, 10]} />
-              <Bar dataKey="alerta" stackId="status" fill={statusColors.alerta} />
-              <Bar dataKey="critico" stackId="status" fill={statusColors.critico} radius={[0, 10, 10, 0]} />
+              <Bar dataKey="bom" name="Bom" stackId="status" fill="url(#statusGradientGreen)" radius={[10, 0, 0, 10]} />
+              <Bar dataKey="alerta" name="Alerta" stackId="status" fill="url(#statusGradientYellow)" />
+              <Bar dataKey="critico" name="Crítico" stackId="status" fill="url(#statusGradientRed)" radius={[0, 10, 10, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -670,8 +623,9 @@ export function GestorStatusCard({ gestores }: { gestores: GestorMetric[] }) {
 export function GestorPerformanceChart({ gestores }: { gestores: GestorMetric[] }) {
   const chartData = gestores.map((gestor) => ({
     gestor: gestor.nome,
-    "Taxa de sucesso": gestor.taxa_sucesso,
-    "LTV médio por mês": gestor.ltv_medio
+    taxa_sucesso: gestor.taxa_sucesso,
+    ltv_medio: gestor.ltv_medio,
+    tooltipLabel: gestor.nome
   }));
 
   return (
@@ -679,51 +633,32 @@ export function GestorPerformanceChart({ gestores }: { gestores: GestorMetric[] 
       <CardHeader>
         <div>
           <CardTitle>Mapa de performance</CardTitle>
-          <p className="theme-muted mt-1 text-sm">
-            Compara taxa de sucesso e LTV médio por mês com dados reais de cada gestor.
-          </p>
+          <p className="theme-muted mt-1 text-sm">Compara taxa de sucesso e LTV médio por mês com dados reais de cada gestor.</p>
         </div>
       </CardHeader>
       <CardContent className="mt-5">
+        <ChartLegendRow
+          items={[
+            { label: "Taxa de sucesso", color: "var(--primary-color)", description: "Percentual de clientes Bom." },
+            { label: "LTV médio por mês", color: "var(--success-color)", description: "Permanência média em meses." }
+          ]}
+        />
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 8, right: 10, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="performanceBlue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#1a68ff" />
+                  <stop offset="100%" stopColor="#64a7fe" />
+                </linearGradient>
+              </defs>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis dataKey="gestor" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
-              <YAxis
-                yAxisId="left"
-                axisLine={false}
-                tickLine={false}
-                domain={[0, 100]}
-                tick={{ fill: "var(--muted-color)", fontSize: 12 }}
-                tickFormatter={(value) => `${value}%`}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "var(--muted-color)", fontSize: 12 }}
-              />
+              <YAxis yAxisId="left" axisLine={false} tickLine={false} domain={[0, 100]} tick={{ fill: "var(--muted-color)", fontSize: 12 }} tickFormatter={(value) => `${value}%`} />
+              <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar
-                yAxisId="left"
-                dataKey="Taxa de sucesso"
-                name="Taxa de sucesso"
-                fill="var(--primary-color)"
-                radius={[10, 10, 0, 0]}
-                barSize={28}
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="LTV médio por mês"
-                name="LTV médio por mês"
-                stroke="var(--success-color)"
-                strokeWidth={3}
-                dot={{ r: 4, fill: "var(--success-color)" }}
-              />
+              <Bar yAxisId="left" dataKey="taxa_sucesso" name="Taxa de sucesso" fill="url(#performanceBlue)" radius={[10, 10, 0, 0]} barSize={28} />
+              <Line yAxisId="right" type="monotone" dataKey="ltv_medio" name="LTV médio por mês" stroke="var(--success-color)" strokeWidth={3} dot={{ r: 4, fill: "var(--success-color)" }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -744,6 +679,20 @@ export function MonthExitBar({ data }: { data: SaidasPorMes[] }) {
     <div className="h-[220px]">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={monthData} margin={{ top: 8, right: 0, left: -16, bottom: 0 }}>
+          <defs>
+            <linearGradient id="exitBarBlue" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#1a68ff" />
+              <stop offset="100%" stopColor="#64a7fe" />
+            </linearGradient>
+            <linearGradient id="exitBarYellow" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ffc603" />
+              <stop offset="100%" stopColor="#efc42c" />
+            </linearGradient>
+            <linearGradient id="exitBarRed" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ff2d45" />
+              <stop offset="100%" stopColor="#fe576b" />
+            </linearGradient>
+          </defs>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
           <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
           <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
@@ -754,15 +703,198 @@ export function MonthExitBar({ data }: { data: SaidasPorMes[] }) {
                 key={`${entry.tooltipLabel}-${entry.saidas}`}
                 fill={
                   entry.churn > 12
-                    ? "var(--danger-color)"
+                    ? "url(#exitBarRed)"
                     : entry.churn > 8
-                      ? "var(--warning-color)"
-                      : "var(--primary-color)"
+                      ? "url(#exitBarYellow)"
+                      : "url(#exitBarBlue)"
                 }
               />
             ))}
           </Bar>
         </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+export function CohortRetentionHeatmap({
+  rows
+}: {
+  rows: Array<{ cohort: string; values: Array<number | null> }>;
+}) {
+  if (!rows.length) {
+    return <div className="theme-muted text-sm">Ainda não há base suficiente para montar a cohort de retenção.</div>;
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-[120px_repeat(6,minmax(0,1fr))] gap-2 text-[11px] uppercase tracking-[0.18em] theme-muted">
+        <span>Safra</span>
+        {Array.from({ length: 6 }).map((_, index) => (
+          <span key={index}>M+{index}</span>
+        ))}
+      </div>
+      {rows.map((row) => (
+        <div key={row.cohort} className="grid grid-cols-[120px_repeat(6,minmax(0,1fr))] gap-2">
+          <div className="theme-text text-sm font-semibold">{row.cohort}</div>
+          {row.values.map((value, index) => (
+            <div
+              key={`${row.cohort}-${index}`}
+              className="flex h-12 items-center justify-center rounded-[14px] text-sm font-semibold"
+              style={{
+                background:
+                  value === null
+                    ? "var(--surface-soft)"
+                    : `rgba(26, 104, 255, ${0.12 + (value / 100) * 0.55})`,
+                color: value !== null && value > 55 ? "#ffffff" : "var(--text-color)"
+              }}
+            >
+              {value === null ? "—" : formatPercent(value)}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function LtvDistributionChart({
+  data
+}: {
+  data: Array<{ faixa: string; quantidade: number }>;
+}) {
+  return (
+    <div className="h-[280px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
+          <defs>
+            <linearGradient id="ltvDistribution" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#1a68ff" />
+              <stop offset="100%" stopColor="#64a7fe" />
+            </linearGradient>
+          </defs>
+          <CartesianGrid vertical={false} strokeDasharray="3 3" />
+          <XAxis dataKey="faixa" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+          <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+          <Tooltip content={<CustomTooltip />} />
+          <Bar dataKey="quantidade" name="Clientes" fill="url(#ltvDistribution)" radius={[10, 10, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+export function HealthByOriginChart({
+  data
+}: {
+  data: Array<{ origem: string; bom: number; alerta: number; critico: number }>;
+}) {
+  return (
+    <div>
+      <ChartLegendRow
+        items={[
+          { label: "Bom", color: "var(--success-color)" },
+          { label: "Alerta", color: "var(--warning-color)" },
+          { label: "Crítico", color: "var(--danger-color)" }
+        ]}
+      />
+      <div className="h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+            <defs>
+              <linearGradient id="originHealthGreen" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#1f8f4d" />
+                <stop offset="100%" stopColor="#61d975" />
+              </linearGradient>
+              <linearGradient id="originHealthYellow" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#d88a05" />
+                <stop offset="100%" stopColor="#ffc603" />
+              </linearGradient>
+              <linearGradient id="originHealthRed" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#d11837" />
+                <stop offset="100%" stopColor="#ff4c61" />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <XAxis dataKey="origem" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar dataKey="bom" name="Bom" stackId="health" fill="url(#originHealthGreen)" radius={[10, 10, 0, 0]} />
+            <Bar dataKey="alerta" name="Alerta" stackId="health" fill="url(#originHealthYellow)" />
+            <Bar dataKey="critico" name="Crítico" stackId="health" fill="url(#originHealthRed)" radius={[10, 10, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+export function ChurnByDimensionChart({
+  data,
+  dimensionLabel
+}: {
+  data: Array<Record<string, any>>;
+  dimensionLabel: string;
+}) {
+  const keys = Object.keys(data[0] ?? {}).filter((key) => key !== "mes" && key !== "tooltipLabel");
+  const palette = ["#1a68ff", "#64a7fe", "#9ec5ff", "#c9cfe5", "#61d975", "#ffc603", "#ff2d45"];
+
+  return (
+    <div>
+      <ChartLegendRow
+        items={keys.map((key, index) => ({
+          label: key,
+          color: palette[index % palette.length],
+          description: dimensionLabel
+        }))}
+      />
+      <div className="h-[320px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+            <Tooltip content={<CustomTooltip />} />
+            {keys.map((key, index) => (
+              <Bar key={key} dataKey={key} name={key} stackId="stack" fill={palette[index % palette.length]} radius={[6, 6, 0, 0]} />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+export function GestorMatrixChart({
+  data
+}: {
+  data: Array<{ gestor: string; carteira: number; taxa_sucesso: number; ltv_medio: number; color: string }>;
+}) {
+  return (
+    <div className="h-[340px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <ScatterChart margin={{ top: 8, right: 10, left: 0, bottom: 8 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis type="number" dataKey="carteira" name="Carteira ativa" tick={{ fill: "var(--muted-color)", fontSize: 12 }} axisLine={false} tickLine={false} />
+          <YAxis type="number" dataKey="taxa_sucesso" name="Taxa de sucesso" domain={[0, 100]} tick={{ fill: "var(--muted-color)", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(value) => `${value}%`} />
+          <ZAxis type="number" dataKey="ltv_medio" range={[80, 420]} name="LTV médio por mês" />
+          <Tooltip cursor={{ strokeDasharray: "4 4" }} content={<CustomTooltip />} />
+          <Scatter
+            name="Gestores"
+            data={data.map((item) => ({
+              ...item,
+              tooltipLabel: item.gestor,
+              "Carteira ativa": item.carteira,
+              "Taxa de sucesso": item.taxa_sucesso,
+              "LTV médio por mês": item.ltv_medio,
+              fill: item.color
+            }))}
+          >
+            {data.map((entry) => (
+              <Cell key={entry.gestor} fill={entry.color} />
+            ))}
+          </Scatter>
+        </ScatterChart>
       </ResponsiveContainer>
     </div>
   );
@@ -782,9 +914,7 @@ export function EvolucaoTable({
       <CardHeader>
         <div>
           <CardTitle>Detalhamento mensal</CardTitle>
-          <p className="theme-muted mt-1 text-sm">
-            Mostra base, entradas, saídas e churn mês a mês.
-          </p>
+          <p className="theme-muted mt-1 text-sm">Mostra base, entradas, saídas e churn mês a mês.</p>
         </div>
       </CardHeader>
       <CardContent className="mt-5 space-y-4">
@@ -807,23 +937,16 @@ export function EvolucaoTable({
                   <TableCell className="text-emerald-600">{row.entradas ?? "—"}</TableCell>
                   <TableCell className="text-rose-600">-{row.saidas}</TableCell>
                   <TableCell className="text-right">
-                    {row.parcial ? (
-                      <Badge tone="gray">Em aberto</Badge>
-                    ) : (
-                      <Badge tone={getChurnTone(row.churn)}>{formatPercent(row.churn)}</Badge>
-                    )}
+                    {row.parcial ? <Badge tone="gray">Em aberto</Badge> : <Badge tone={getChurnTone(row.churn)}>{formatPercent(row.churn)}</Badge>}
                   </TableCell>
                 </TableRow>
               ))}
               <TableRow className="theme-soft-surface">
                 <TableCell className="theme-text font-semibold">Média</TableCell>
-                <TableCell colSpan={3} className="theme-muted">
-                  Apenas meses fechados
-                </TableCell>
+                <TableCell colSpan={3} className="theme-muted">Apenas meses fechados</TableCell>
                 <TableCell className="theme-text text-right font-semibold">
                   {formatPercent(
-                    completed.reduce((acc, item) => acc + (item.churn ?? 0), 0) /
-                      Math.max(completed.length, 1)
+                    completed.reduce((acc, item) => acc + (item.churn ?? 0), 0) / Math.max(completed.length, 1)
                   )}
                 </TableCell>
               </TableRow>
@@ -839,10 +962,12 @@ export function EvolucaoTable({
 export function SummaryCard({
   title,
   description,
+  actions,
   children
 }: {
   title: string;
   description?: string;
+  actions?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -852,8 +977,56 @@ export function SummaryCard({
           <CardTitle>{title}</CardTitle>
           {description ? <p className="theme-muted mt-1 text-sm">{description}</p> : null}
         </div>
+        {actions}
       </CardHeader>
       <CardContent className="mt-5">{children}</CardContent>
     </Card>
   );
+}
+
+export function buildGestorMetricsFromBase(baseClientes: BaseClienteDetalhado[]) {
+  const grouped = new Map<
+    string,
+    {
+      nome: string;
+      ativos: number;
+      bons: number;
+      alerta: number;
+      critico: number;
+      ltvValues: number[];
+    }
+  >();
+
+  baseClientes.forEach((cliente) => {
+    const nome = cliente.gestor || "Sem gestor";
+    if (!grouped.has(nome)) {
+      grouped.set(nome, { nome, ativos: 0, bons: 0, alerta: 0, critico: 0, ltvValues: [] });
+    }
+    const item = grouped.get(nome)!;
+
+    if (cliente.ativo === "Sim") {
+      item.ativos += 1;
+      if (cliente.status === "bom") item.bons += 1;
+      if (cliente.status === "alerta") item.alerta += 1;
+      if (cliente.status === "critico") item.critico += 1;
+      if (typeof cliente.ltv_meses === "number") item.ltvValues.push(cliente.ltv_meses);
+    }
+  });
+
+  return Array.from(grouped.values())
+    .map((item) => {
+      const total = item.bons + item.alerta + item.critico;
+      return {
+        nome: item.nome,
+        ativos: item.ativos,
+        bons: item.bons,
+        alerta: item.alerta,
+        critico: item.critico,
+        taxa_sucesso: total ? (item.bons / total) * 100 : 0,
+        ltv_medio: item.ltvValues.length
+          ? item.ltvValues.reduce((acc, value) => acc + value, 0) / item.ltvValues.length
+          : 0
+      };
+    })
+    .sort((a, b) => (b.ativos - a.ativos) || (b.taxa_sucesso - a.taxa_sucesso));
 }

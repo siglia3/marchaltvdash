@@ -51,6 +51,7 @@ export function MensalPage() {
 }
 
 function MensalContent({ data }: { data: ClientesDashboardData }) {
+  const [selectedChartYear, setSelectedChartYear] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("all");
   const monthRows = useMemo<MonthlyRow[]>(
@@ -88,6 +89,7 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
   useEffect(() => {
     if (!years.length) return;
     setSelectedYear((current) => (years.includes(current) ? current : years[0]));
+    setSelectedChartYear((current) => (years.includes(current) ? current : years[0]));
   }, [years]);
 
   useEffect(() => {
@@ -96,7 +98,8 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
     setSelectedMonth(monthExists || selectedMonth === "all" ? selectedMonth : "all");
   }, [monthsForYear, selectedMonth]);
 
-  const lastTwelveRows = monthRows.slice(-12);
+  const chartYearRows = monthRows.filter((item) => item.ano === selectedChartYear);
+  const lastTwelveRows = (chartYearRows.length ? chartYearRows : monthRows).slice(-12);
   const chartRows = lastTwelveRows.map((item) => ({
     ...item,
     axisLabel: shortMonthLabel(item.mesNome)
@@ -105,8 +108,9 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
   const lastClosed = closedMonths[closedMonths.length - 1];
   const averageChurn =
     closedMonths.reduce((acc: number, item) => acc + (item.churn ?? 0), 0) / Math.max(closedMonths.length, 1);
-  const origemPalette = ["var(--primary-color)", "var(--success-color)", "var(--warning-color)", "var(--danger-color)"];
-  const origemCounts = (data.clientes_detalhados ?? []).reduce<Record<string, number>>(
+  const origemPalette = ["var(--primary-color)", "#64a7fe", "#c9cfe5", "#a8b2d2"];
+  const origemSource = data.base_clientes_detalhada?.filter((cliente) => cliente.ativo === "Sim") ?? data.clientes_detalhados ?? [];
+  const origemCounts = origemSource.reduce<Record<string, number>>(
     (acc, cliente) => {
       const origem = (cliente.origem ?? "Sem origem").trim() || "Sem origem";
       acc[origem] = (acc[origem] ?? 0) + 1;
@@ -126,23 +130,47 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
   return (
     <div className="space-y-8 pb-10">
       <div className="grid gap-3 md:grid-cols-3">
-        <InsightChip label="Churn médio" value={formatPercent(averageChurn)} tone="red" icon={BarChart3} />
+        <InsightChip
+          label="Churn médio"
+          value={formatPercent(averageChurn)}
+          tone="red"
+          icon={BarChart3}
+          tooltip="Média do churn dos meses fechados. Cálculo mensal: saídas do mês / base de início do mês."
+        />
         <InsightChip
           label="Último mês fechado"
           value={lastClosed ? `${lastClosed.mes} · ${formatPercent(lastClosed.churn)}` : "—"}
           tone="green"
           icon={CalendarRange}
+          tooltip="Mostra o último mês da série que não está marcado como parcial, com o churn daquele período."
         />
         <InsightChip
           label="Base atual"
           value={String(data.evolucao_mensal.at(-1)?.base_inicio ?? data.clientes_ativos)}
           tone="blue"
           icon={Users}
+          tooltip="Quantidade de clientes ativos na base mais recente da série mensal derivada da BASE_CLIENTES."
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <SummaryCard title="Base e churn dos últimos 12 meses" description="Mostra o tamanho da base e o churn ao longo dos últimos 12 meses.">
+        <SummaryCard
+          title="Base e churn dos últimos 12 meses"
+          description="Mostra o tamanho da base e o churn ao longo dos últimos 12 meses."
+          actions={
+            <select
+              value={selectedChartYear}
+              onChange={(event) => setSelectedChartYear(event.target.value)}
+              className="theme-soft-surface theme-text h-10 rounded-full border px-4 text-sm outline-none"
+            >
+              {years.map((year) => (
+                <option key={`chart-${year}`} value={year} style={{ background: "var(--surface)", color: "var(--text-color)" }}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          }
+        >
           <div className="h-[380px]">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartRows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>

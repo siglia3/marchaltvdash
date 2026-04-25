@@ -86,7 +86,8 @@ function buildDashboardPayload_() {
       };
     }),
     saidas_por_mes: buildSaidasPorMesFromBase_(baseClientes, churnLookup, evolucaoMensal),
-    clientes_detalhados: buildClientesDetalhados_(clientesAtivosValidos, hoje)
+    clientes_detalhados: buildClientesDetalhados_(clientesAtivosValidos, hoje),
+    base_clientes_detalhada: buildBaseClientesDetalhada_(baseClientes, hoje)
   };
 }
 
@@ -304,6 +305,37 @@ function buildClientesDetalhados_(rows, hoje) {
       }
 
       return a.status.localeCompare(b.status);
+    });
+}
+
+function buildBaseClientesDetalhada_(rows, hoje) {
+  return rows
+    .map(function (row) {
+      var nome = normalizeDisplayText_(getField_(row, ["CLIENTES"]));
+      var ativo = normalizeDisplayText_(getField_(row, ["ATIVO"]));
+      if (!nome) return null;
+
+      var status = normalizeSaude_(getSaude_(row));
+
+      return {
+        nome: nome,
+        ativo: ativo,
+        gestor: normalizeDisplayText_(getField_(row, ["GESTOR"])) || "Sem gestor",
+        origem: normalizeDisplayText_(getField_(row, ["ORIGEM"])) || null,
+        nicho: normalizeDisplayText_(getField_(row, ["NICHO"])) || null,
+        status: status || "sem_status",
+        status_label: status ? statusLabel_(status) : null,
+        data_inicio: formatDateForPayload_(parseDate_(getField_(row, ["DATA PLANEJAMENTO"]))),
+        data_saida: formatDateForPayload_(parseDate_(getField_(row, ["SAÍDA CLIENTE"]))),
+        ma_entrada: normalizeDisplayText_(getField_(row, ["M/A ENTRADA"])) || null,
+        ma_saida: normalizeDisplayText_(getField_(row, ["M/A SAÍDA"])) || null,
+        ltv_meses: resolveLtvMeses_(row, hoje),
+        motivo_saida: normalizeDisplayText_(getField_(row, ["MOTIVO SAÍDA"])) || null
+      };
+    })
+    .filter(Boolean)
+    .sort(function (a, b) {
+      return a.nome.localeCompare(b.nome);
     });
 }
 

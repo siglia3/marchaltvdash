@@ -22,12 +22,13 @@ export function DashboardPage() {
     >
       {(data) => {
         const healthPieData = [
-          { name: "Bons", value: data.clientes_bons, color: statusColors.bons },
+          { name: "Bom", value: data.clientes_bons, color: statusColors.bom },
           { name: "Alerta", value: data.clientes_alerta, color: statusColors.alerta },
           { name: "Crítico", value: data.clientes_critico, color: statusColors.critico }
         ];
-        const origemPalette = ["var(--primary-color)", "var(--success-color)", "var(--warning-color)", "var(--danger-color)"];
-        const origemCounts = (data.clientes_detalhados ?? []).reduce<Record<string, number>>((acc, cliente) => {
+        const origemPalette = ["var(--primary-color)", "#64a7fe", "#c9cfe5", "#a8b2d2"];
+        const origemSource = data.base_clientes_detalhada?.filter((cliente) => cliente.ativo === "Sim") ?? data.clientes_detalhados ?? [];
+        const origemCounts = origemSource.reduce<Record<string, number>>((acc, cliente) => {
           const origem = (cliente.origem ?? "Sem origem").trim() || "Sem origem";
           acc[origem] = (acc[origem] ?? 0) + 1;
           return acc;
@@ -47,7 +48,7 @@ export function DashboardPage() {
               <SummaryCard title="Resumo da carteira">
                 <div>
                   <div className="flex items-end gap-3">
-                    <span className="theme-text text-6xl font-semibold tracking-[-0.06em]">{data.clientes_ativos}</span>
+                    <span className="theme-text text-[55px] font-semibold leading-none tracking-[-0.06em]">{data.clientes_ativos}</span>
                     <span className="theme-muted pb-2 text-lg">clientes ativos</span>
                   </div>
                   <p className="theme-muted mt-4 max-w-2xl text-sm leading-7">
@@ -58,16 +59,19 @@ export function DashboardPage() {
                       label="Taxa de sucesso"
                       value={formatPercent(data.taxa_sucesso)}
                       tone="green"
+                      tooltip="Percentual de clientes em status Bom dentro da base ativa com STATUS CLIENTE preenchido. Cálculo: clientes_bons / clientes_ativos."
                     />
                     <InsightChip
                       label="LTV médio"
                       value={`${formatMonths(data.ltv_medio)} meses`}
                       tone="blue"
+                      tooltip="Tempo médio de permanência da base ativa. Usa PERÍODO quando existe; se não, calcula pela diferença entre DATA PLANEJAMENTO e SAÍDA CLIENTE ou a data atual."
                     />
                     <InsightChip
                       label="Variação da base"
                       value={formatSignedPercent(data.variacao_base)}
                       tone={data.variacao_base >= 0 ? "blue" : "yellow"}
+                      tooltip="Compara a base ativa atual com a base de início do mês mais recente da série mensal. Cálculo: (clientes_ativos - base_mes_recente) / base_mes_recente."
                     />
                   </div>
                 </div>
@@ -85,7 +89,7 @@ export function DashboardPage() {
               <MetricCard
                 title="Clientes ativos"
                 value={data.clientes_ativos}
-                description="Base usada para calcular as métricas."
+                description="Base completa dos clientes ativos."
                 badge={`${formatSignedPercent(data.variacao_base)} vs. referência`}
                 icon={Users}
                 tone="blue"

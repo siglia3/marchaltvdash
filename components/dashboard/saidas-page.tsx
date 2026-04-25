@@ -77,18 +77,37 @@ function SaidasContent({ data }: { data: { saidas_por_mes: ExitItem[] | any[] } 
 
   const selectedExit =
     monthsForYear.find((item) => item.mes === selectedMonth) ?? monthsForYear[monthsForYear.length - 1];
+  const totalSaidas = exitItems.reduce((acc, item) => acc + item.clientes.length, 0);
+  const peakMonth = exitItems.reduce<ExitItem | null>((current, item) => {
+    if (!current || item.clientes.length > current.clientes.length) return item;
+    return current;
+  }, null);
+  const latestExit = exitItems[exitItems.length - 1];
 
   return (
     <div className="space-y-8 pb-10">
       <div className="grid gap-3 md:grid-cols-3">
-        <InsightChip label="Meses com saídas" value={String(data.saidas_por_mes.length)} tone="blue" icon={CalendarRange} />
         <InsightChip
-          label="Maior volume"
-          value={exitItems.length ? `${Math.max(...exitItems.map((item) => item.clientes.length))} saídas` : "—"}
+          label="Total de saídas"
+          value={String(totalSaidas)}
+          tone="blue"
+          icon={CalendarRange}
+          tooltip="Soma de todos os clientes listados em saidas_por_mes ao longo da série histórica."
+        />
+        <InsightChip
+          label="Pico mensal"
+          value={peakMonth ? `${peakMonth.label} · ${peakMonth.clientes.length}` : "—"}
           tone="red"
           icon={AlertTriangle}
+          tooltip="Mês com o maior número absoluto de saídas registradas."
         />
-        <InsightChip label="Último período" value={exitItems.at(-1)?.label ?? "—"} tone="yellow" icon={Clock3} />
+        <InsightChip
+          label="Último mês com saída"
+          value={latestExit ? `${latestExit.label} · ${latestExit.clientes.length}` : "—"}
+          tone="yellow"
+          icon={Clock3}
+          tooltip="Último período da série que registrou clientes na lista de saídas."
+        />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">

@@ -33,6 +33,22 @@ export type ClienteDetalhado = {
   ltv_meses: number | null;
 };
 
+export type BaseClienteDetalhado = {
+  nome: string;
+  ativo: string;
+  gestor: string;
+  origem: string | null;
+  nicho: string | null;
+  status: "bom" | "alerta" | "critico" | "sem_status";
+  status_label: string | null;
+  data_inicio: string | null;
+  data_saida: string | null;
+  ma_entrada: string | null;
+  ma_saida: string | null;
+  ltv_meses: number | null;
+  motivo_saida: string | null;
+};
+
 export type ClientesDashboardData = {
   atualizado_em: string;
   clientes_ativos: number;
@@ -51,4 +67,5 @@ export type ClientesDashboardData = {
   evolucao_mensal: EvolucaoMensal[];
   saidas_por_mes: SaidasPorMes[];
   clientes_detalhados?: ClienteDetalhado[];
+  base_clientes_detalhada?: BaseClienteDetalhado[];
 };

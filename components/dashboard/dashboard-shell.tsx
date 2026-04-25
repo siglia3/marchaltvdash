@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, LogOut, Moon, RefreshCw, Sun, TrendingUp, Users } from "lucide-react";
+import { LayoutDashboard, LineChart, LogOut, Moon, RefreshCw, Sun, TrendingUp, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useClientesData } from "@/hooks/use-clientes-data";
 import { ClientesDashboardData } from "@/lib/types";
@@ -22,7 +22,8 @@ const navItems: NavItem[] = [
   { href: "/", label: "Visão Geral", icon: LayoutDashboard },
   { href: "/gestores", label: "Por Gestor", icon: Users },
   { href: "/evolucao-mensal", label: "Evolução Mensal", icon: TrendingUp },
-  { href: "/registro-de-saidas", label: "Registro de Saídas", icon: LogOut }
+  { href: "/registro-de-saidas", label: "Registro de Saídas", icon: LogOut },
+  { href: "/analises-avancadas", label: "Análises Avançadas", icon: LineChart }
 ];
 
 type ThemeMode = "light" | "dark";
@@ -134,7 +135,7 @@ export function DashboardShell({
           <header className="theme-surface mb-6 rounded-[24px] px-6 py-5">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-3xl">
-                <p className="theme-muted text-xs uppercase tracking-[0.22em]">Dashboard / Saúde de Clientes</p>
+                <p className="theme-muted text-xs uppercase tracking-[0.22em]">Dashboard / Análise de Dados</p>
                 <h1 className="theme-text mt-3 text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">{title}</h1>
                 <p className="theme-muted mt-3 max-w-2xl text-sm leading-7">{description}</p>
               </div>

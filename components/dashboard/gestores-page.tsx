@@ -3,6 +3,7 @@
 import { Activity, BarChart3, Trophy, Users } from "lucide-react";
 import { DashboardDataPage } from "@/components/dashboard/dashboard-shell";
 import {
+  buildGestorMetricsFromBase,
   GestorPerformanceChart,
   GestorStatusCard,
   InsightChip,
@@ -19,7 +20,11 @@ export function GestoresPage() {
       description="Compare saúde da carteira, taxa de sucesso e retenção por gestor."
     >
       {(data) => {
-        const gestores = [...data.por_gestor].sort((a, b) => b.taxa_sucesso - a.taxa_sucesso);
+        const gestores = (
+          data.base_clientes_detalhada?.length
+            ? buildGestorMetricsFromBase(data.base_clientes_detalhada)
+            : data.por_gestor
+        ).sort((a, b) => ("ativos" in b ? (b.ativos as number) : 0) - ("ativos" in a ? (a.ativos as number) : 0) || b.taxa_sucesso - a.taxa_sucesso);
         const topGestor = gestores[0];
         const avgSuccess =
           gestores.reduce((acc, gestor) => acc + gestor.taxa_sucesso, 0) / Math.max(gestores.length, 1);
@@ -32,9 +37,22 @@ export function GestoresPage() {
                 value={topGestor ? `${topGestor.nome} · ${formatPercent(topGestor.taxa_sucesso)}` : "—"}
                 tone="yellow"
                 icon={Trophy}
+                tooltip="Gestor com maior percentual de clientes em status Bom dentro da própria carteira ativa com STATUS CLIENTE preenchido."
               />
-              <InsightChip label="Média da equipe" value={formatPercent(avgSuccess)} tone="blue" icon={BarChart3} />
-              <InsightChip label="Gestores ativos" value={String(gestores.length)} tone="green" icon={Users} />
+              <InsightChip
+                label="Média da equipe"
+                value={formatPercent(avgSuccess)}
+                tone="blue"
+                icon={BarChart3}
+                tooltip="Média simples da taxa de sucesso de todos os gestores listados nesta página."
+              />
+              <InsightChip
+                label="Gestores ativos"
+                value={String(gestores.length)}
+                tone="green"
+                icon={Users}
+                tooltip="Quantidade de gestores encontrados na BASE_CLIENTES. Quando a API nova estiver publicada, inclui todos os gestores da base."
+              />
             </div>
 
             <div className="grid gap-4 lg:grid-cols-2">
@@ -45,7 +63,7 @@ export function GestoresPage() {
             <Card className="p-6">
               <CardHeader>
                 <div>
-                  <CardTitle>Resumo por gestor</CardTitle>
+                  <CardTitle>Ranking por gestor</CardTitle>
                   <p className="theme-muted mt-1 text-sm">
                     Ranking com taxa de sucesso e LTV médio por mês de cada carteira.
                   </p>
