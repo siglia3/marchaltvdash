@@ -6,7 +6,7 @@ import {
   buildGestorMetricsFromBase,
   GestorPerformanceChart,
   GestorStatusCard,
-  InsightChip,
+  MetricCard,
   SummaryCard
 } from "@/components/dashboard/dashboard-shared";
 import { Badge } from "@/components/ui/badge";
@@ -37,26 +37,29 @@ export function GestoresPage() {
         return (
           <div className="space-y-8 pb-10">
             <div className="grid gap-3 md:grid-cols-3">
-              <InsightChip
-                label="Melhores métricas"
-                value={topGestor ? `${topGestor.nome} · ${formatPercent(topGestor.score_composto ?? 0)}` : "—"}
+              <MetricCard
+                title="Melhores métricas"
+                value={topGestor ? topGestor.nome : "—"}
+                description="Gestor com melhor cálculo entre clientes ativos, taxa de sucesso e LTV médio/mês."
+                badge={topGestor ? `${formatPercent(topGestor.score_composto ?? 0)} no ranking` : "Sem dados"}
                 tone="yellow"
                 icon={Trophy}
-                tooltip="Ranking composto por taxa de sucesso, LTV médio por mês e volume de clientes com status preenchido. Evita que uma carteira muito pequena lidere só por ter poucos clientes bons."
               />
-              <InsightChip
-                label="Métrica média da equipe"
+              <MetricCard
+                title="Métrica média da equipe"
                 value={formatPercent(avgScore)}
+                description="Média do cálculo entre clientes ativos, taxa de sucesso e LTV médio/mês."
+                badge={`${formatPercent(avgSuccess)} de sucesso médio`}
                 tone="blue"
                 icon={BarChart3}
-                tooltip="Média do score composto da equipe. Combina taxa de sucesso, LTV médio por mês e volume de clientes com status preenchido."
               />
-              <InsightChip
-                label="Gestores ativos"
-                value={String(gestores.length)}
+              <MetricCard
+                title="Gestores ativos"
+                value={gestores.length}
+                description="Gestores com clientes ativos e dados válidos na operação."
+                badge={`${gestoresComDados.length} com status`}
                 tone="green"
                 icon={Users}
-                tooltip="Quantidade de gestores com pelo menos um cliente ativo na BASE_CLIENTES."
               />
             </div>
 

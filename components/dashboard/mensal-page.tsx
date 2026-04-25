@@ -8,7 +8,7 @@ import {
   EntryExitBaseChart,
   EvolucaoTable,
   HealthByOriginChart,
-  InsightChip,
+  MetricCard,
   SummaryCard,
   getSimpleMonthlyInsight,
   shortMonthLabel,
@@ -328,26 +328,29 @@ function MensalContent({ data }: { data: ClientesDashboardData }) {
   return (
     <div className="space-y-8 pb-10">
       <div className="grid gap-3 md:grid-cols-3">
-        <InsightChip
-          label="Mês com Maior Entrada"
+        <MetricCard
+          title="Mês com Maior Entrada"
           value={topEntryMonth ? topEntryMonth.tooltipLabel : "—"}
+          description="Período com o maior volume de entradas nos últimos 12 meses."
+          badge={`${topEntryMonth?.entradas ?? 0} entradas`}
           tone="green"
           icon={CalendarRange}
-          tooltip="Mês dos últimos 12 meses com a maior quantidade de entradas registradas na série mensal."
         />
-        <InsightChip
-          label="Mês com Maior Saída"
+        <MetricCard
+          title="Mês com Maior Saída"
           value={topExitMonth ? topExitMonth.tooltipLabel : "—"}
+          description="Período com o maior volume de saídas nos últimos 12 meses."
+          badge={`${topExitMonth?.saidas ?? 0} saídas`}
           tone="red"
           icon={TrendingDown}
-          tooltip="Mês dos últimos 12 meses com a maior quantidade de saídas registradas na série mensal."
         />
-        <InsightChip
-          label="Base Ativa de Clientes"
-          value={String(currentBase)}
+        <MetricCard
+          title="Base Ativa de Clientes"
+          value={currentBase}
+          description="Quantidade atual de clientes ativos na base."
+          badge={chartRows.at(-1)?.tooltipLabel ?? "Base atual"}
           tone="blue"
           icon={Users}
-          tooltip="Quantidade atual de clientes ativos na base, considerando o retrato mais recente da carteira."
         />
       </div>
 

@@ -5,7 +5,7 @@ import { AlertTriangle, CalendarRange, Clock3 } from "lucide-react";
 import { DashboardDataPage } from "@/components/dashboard/dashboard-shell";
 import {
   ChurnByDimensionChart,
-  InsightChip,
+  MetricCard,
   MonthExitBar,
   SummaryCard,
   getChurnTone
@@ -369,26 +369,29 @@ function SaidasContent({ data }: { data: ClientesDashboardData & { saidas_por_me
   return (
     <div className="space-y-8 pb-10">
       <div className="grid gap-3 md:grid-cols-3">
-        <InsightChip
-          label="Nicho com maior churn"
-          value={topNicheLast12 ? `${topNicheLast12[0]} · ${topNicheLast12[1]}` : "—"}
+        <MetricCard
+          title="Nicho com maior churn"
+          value={topNicheLast12 ? topNicheLast12[0] : "—"}
+          description="Nicho que concentrou mais saídas nos últimos 12 meses."
+          badge={topNicheLast12 ? `${topNicheLast12[1]} saídas` : "Sem dados"}
           tone="yellow"
           icon={CalendarRange}
-          tooltip="Nicho que mais concentrou saídas nos últimos 12 meses, considerando a soma do volume mensal de churn do período."
         />
-        <InsightChip
-          label="Origem de maior churn"
-          value={topOriginLast12 ? `${topOriginLast12[0]} · ${topOriginLast12[1]}` : "—"}
+        <MetricCard
+          title="Origem de maior churn"
+          value={topOriginLast12 ? topOriginLast12[0] : "—"}
+          description="Origem que concentrou mais saídas nos últimos 12 meses."
+          badge={topOriginLast12 ? `${topOriginLast12[1]} saídas` : "Sem dados"}
           tone="red"
           icon={AlertTriangle}
-          tooltip="Origem que mais concentrou saídas nos últimos 12 meses, considerando a soma do volume mensal de churn do período."
         />
-        <InsightChip
-          label="Saídas no ano vigente"
-          value={String(yearToDateExits)}
+        <MetricCard
+          title="Saídas no ano vigente"
+          value={yearToDateExits}
+          description="Soma de clientes que saíram ao longo do ano vigente."
+          badge={`${currentYear} em andamento`}
           tone="blue"
           icon={Clock3}
-          tooltip="Soma da quantidade de clientes que saíram ao longo do ano vigente, agregando todos os meses fechados e em aberto desse ano."
         />
       </div>
 

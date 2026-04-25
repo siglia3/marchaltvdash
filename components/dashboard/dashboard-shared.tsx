@@ -349,7 +349,7 @@ export function MetricCard({
   href
 }: {
   title: string;
-  value: number;
+  value: ReactNode;
   description: string;
   badge: string;
   icon: LucideIcon;
