@@ -94,7 +94,7 @@ function AnalisesContent({ data }: { data: ClientesDashboardData }) {
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <SummaryCard title="Distribuição de LTV" description="Mostra como a carteira se distribui entre faixas de permanência.">
+        <SummaryCard title="Distribuição de LTV" description="Mostra como a carteira se distribui entre faixas de permanência em meses: 0–3, 4–6, 7–12, 13–18 e 19+ meses.">
           <LtvDistributionChart data={ltvDistribution} />
         </SummaryCard>
         <SummaryCard title="Saúde por origem de cliente" description="Cruza qualidade da carteira com a empresa de origem do lead.">

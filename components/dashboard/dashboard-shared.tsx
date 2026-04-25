@@ -471,33 +471,32 @@ export function OrigemMixCard({
     color: palette[index] || item.color
   }));
 
-  var cumulative = 0;
-  var annotated = normalized.map(function (item) {
-    var start = cumulative;
-    cumulative += item.percent;
-    var midAngle = ((start + item.percent / 2) / 100) * 360 - 90;
-    return { ...item, start: start, midAngle: midAngle };
-  });
+  const positions = [
+    { left: "2%", top: "6%" },
+    { left: "61%", top: "6%" },
+    { left: "31%", top: "72%" },
+    { left: "61%", top: "72%" }
+  ] as const;
 
   return (
     <div className="space-y-6">
       <div className="hidden md:block">
-        <div className="relative mx-auto max-w-[520px]">
-          <div className="relative h-[420px]">
-            <div className="absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2">
+        <div className="mx-auto max-w-[560px] rounded-[28px] bg-[var(--surface-soft)] px-6 py-6">
+          <div className="relative h-[360px]">
+            <div className="absolute left-1/2 top-[48%] h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={annotated}
+                    data={normalized}
                     dataKey="value"
                     nameKey="name"
-                    innerRadius={70}
-                    outerRadius={118}
+                    innerRadius={56}
+                    outerRadius={98}
                     stroke="var(--surface)"
                     strokeWidth={6}
                     paddingAngle={2}
                   >
-                    {annotated.map((entry) => (
+                    {normalized.map((entry) => (
                       <Cell key={entry.name} fill={entry.color} />
                     ))}
                   </Pie>
@@ -505,27 +504,19 @@ export function OrigemMixCard({
               </ResponsiveContainer>
             </div>
 
-            {annotated.map((item) => {
-              const radians = (item.midAngle * Math.PI) / 180;
-              const anchorX = 50 + Math.cos(radians) * 22;
-              const anchorY = 50 + Math.sin(radians) * 22;
-              const bubbleX = 50 + Math.cos(radians) * 41;
-              const bubbleY = 50 + Math.sin(radians) * 41;
-              const isRight = bubbleX >= 50;
-              const isBottom = bubbleY >= 50;
-
+            {normalized.map((item, index) => {
+              const position = positions[index] || positions[positions.length - 1];
               return (
               <div
                 key={`${item.name}-callout`}
                 className="absolute"
                 style={{
-                  left: `${bubbleX}%`,
-                  top: `${bubbleY}%`,
-                  transform: `translate(${isRight ? "0%" : "-100%"}, ${isBottom ? "0%" : "-100%"})`
+                  left: position.left,
+                  top: position.top
                 }}
               >
                 <div
-                  className="min-w-[144px] rounded-[18px] px-4 py-3 shadow-[0_18px_40px_rgba(5,8,17,0.22)]"
+                  className="min-w-[156px] rounded-[20px] px-4 py-3 shadow-[0_18px_40px_rgba(5,8,17,0.22)]"
                   style={{
                     backgroundColor: item.color,
                     color: item.color === "var(--origin-ring-3)" || item.color === "var(--origin-ring-4)" ? "#0f172a" : "#ffffff"
@@ -537,23 +528,6 @@ export function OrigemMixCard({
                   <p className="mt-1 text-sm font-semibold">{item.name}</p>
                   <p className="mt-1 text-xs opacity-90">{item.value} clientes</p>
                 </div>
-                <div
-                  className="absolute h-px"
-                  style={{
-                    left: isRight ? "-28px" : "100%",
-                    top: "50%",
-                    width: "28px",
-                    backgroundColor: item.color
-                  }}
-                />
-                <span
-                  className="absolute h-3 w-3 -translate-y-1/2 rounded-full"
-                  style={{
-                    left: `${anchorX - bubbleX}%`,
-                    top: `${anchorY - bubbleY}%`,
-                    backgroundColor: item.color
-                  }}
-                />
               </div>
               );
             })}
@@ -562,7 +536,7 @@ export function OrigemMixCard({
       </div>
 
       <div className="grid gap-3 md:hidden">
-        {annotated.map((item) => (
+        {normalized.map((item) => (
           <div key={`${item.name}-mobile`} className="theme-soft-surface rounded-[18px] p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -938,7 +912,7 @@ export function LtvDistributionChart({
   return (
     <div className="h-[280px]">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 4, left: -18, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 8, right: 4, left: -8, bottom: 12 }} barCategoryGap={18}>
           <defs>
             <linearGradient id="ltvDistribution" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#1a68ff" />
@@ -946,10 +920,24 @@ export function LtvDistributionChart({
             </linearGradient>
           </defs>
           <CartesianGrid vertical={false} strokeDasharray="3 3" />
-          <XAxis dataKey="faixa" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
+          <XAxis
+            dataKey="faixa"
+            axisLine={false}
+            tickLine={false}
+            interval={0}
+            height={48}
+            tick={({ x, y, payload }) => (
+              <g transform={`translate(${x},${y})`}>
+                <text textAnchor="middle" fill="var(--muted-color)" fontSize="12">
+                  <tspan x="0" dy="0">{payload.value}</tspan>
+                  <tspan x="0" dy="14">meses</tspan>
+                </text>
+              </g>
+            )}
+          />
           <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="quantidade" name="Clientes" fill="url(#ltvDistribution)" radius={[10, 10, 0, 0]} />
+          <Bar dataKey="quantidade" name="Clientes" fill="url(#ltvDistribution)" radius={[14, 14, 4, 4]} barSize={42} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -1009,19 +997,19 @@ export function ChurnByDimensionChart({
   dimensionLabel: string;
 }) {
   const keys = Object.keys(data[0] ?? {}).filter((key) => key !== "mes" && key !== "tooltipLabel");
-  const palette = ["#1a68ff", "#64a7fe", "#9ec5ff", "#c9cfe5", "#61d975", "#ffc603", "#ff2d45"];
+  const palette = ["#1a68ff", "#4b8dff", "#7ab0ff", "#b7d3ff", "#dce8ff"];
 
   return (
     <div>
       <div className="h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+          <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barCategoryGap={18}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
             <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--muted-color)", fontSize: 12 }} />
             <Tooltip content={<CustomTooltip />} />
             {keys.map((key, index) => (
-              <Bar key={key} dataKey={key} name={key} stackId="stack" fill={palette[index % palette.length]} radius={[6, 6, 0, 0]} />
+              <Bar key={key} dataKey={key} name={key} stackId="stack" fill={palette[index % palette.length]} radius={0} barSize={34} />
             ))}
           </BarChart>
         </ResponsiveContainer>
