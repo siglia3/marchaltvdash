@@ -121,7 +121,7 @@ export function DashboardPage() {
             </div>
 
             <div className="grid gap-4 xl:grid-cols-2">
-              <SummaryCard title="Métricas cruzadas por gestor" description="Cruza taxa de sucesso e LTV médio das carteiras por gestor.">
+              <SummaryCard title="Métricas cruzadas por gestor" description="Cruza taxa de sucesso e LTV médio por mês das carteiras por gestor.">
                 <GestorCrossMetricSummary gestores={data.por_gestor} />
               </SummaryCard>
 

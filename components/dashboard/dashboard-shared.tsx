@@ -157,7 +157,9 @@ export function CustomTooltip({
             <span className="theme-text font-semibold">
               {item.name.toLowerCase().includes("churn") || item.name.includes("%")
                 ? formatPercent(item.value)
-                : item.value}
+                : item.name.toLowerCase().includes("ltv")
+                  ? `${item.value} meses`
+                  : item.value}
             </span>
           </div>
         ))}
@@ -318,21 +320,37 @@ export function HealthDonut({
 }: {
   data: Array<{ name: string; value: number; color: string }>;
 }) {
-  const total = data.reduce((acc, item) => acc + item.value, 0);
-
   return (
     <div className="flex flex-col items-center gap-5">
-      <div className="relative mx-auto h-[220px] w-[220px]">
+      <div className="relative mx-auto h-[260px] w-[260px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
-              innerRadius={62}
-              outerRadius={92}
+              innerRadius={72}
+              outerRadius={110}
               stroke="transparent"
               paddingAngle={3}
+              labelLine={false}
+              label={({ percent, payload, x, y }) => {
+                if (!percent || !payload) return null;
+                const labelColor = payload.name === "Alerta" ? "#0f172a" : "#ffffff";
+                return (
+                  <text
+                    x={x}
+                    y={y}
+                    fill={labelColor}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize={18}
+                    fontWeight={700}
+                  >
+                    {`${Math.round(percent * 100)}%`}
+                  </text>
+                );
+              }}
             >
               {data.map((entry) => (
                 <Cell key={entry.name} fill={entry.color} />
@@ -341,10 +359,6 @@ export function HealthDonut({
             <Tooltip content={<CustomTooltip />} />
           </PieChart>
         </ResponsiveContainer>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-          <p className="theme-text text-5xl font-semibold tracking-[-0.05em]">{total}</p>
-          <p className="theme-muted mt-1 text-xs uppercase tracking-[0.18em]">clientes ativos</p>
-        </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-4">
@@ -497,7 +511,7 @@ export function GestorCrossMetricSummary({ gestores }: { gestores: GestorMetric[
     .map((gestor) => ({
       gestor: gestor.nome,
       "Taxa de sucesso": gestor.taxa_sucesso,
-      "LTV médio": gestor.ltv_medio
+      "LTV médio por mês": gestor.ltv_medio
     }));
 
   return (
@@ -539,8 +553,8 @@ export function GestorCrossMetricSummary({ gestores }: { gestores: GestorMetric[
           <Line
             yAxisId="right"
             type="monotone"
-            dataKey="LTV médio"
-            name="LTV médio"
+            dataKey="LTV médio por mês"
+            name="LTV médio por mês"
             stroke="var(--success-color)"
             strokeWidth={3}
             dot={{ r: 4, fill: "var(--success-color)" }}
@@ -600,7 +614,7 @@ export function GestorPerformanceChart({ gestores }: { gestores: GestorMetric[] 
   const chartData = gestores.map((gestor) => ({
     gestor: gestor.nome,
     "Taxa de sucesso": gestor.taxa_sucesso,
-    "LTV médio": gestor.ltv_medio
+    "LTV médio por mês": gestor.ltv_medio
   }));
 
   return (
@@ -609,7 +623,7 @@ export function GestorPerformanceChart({ gestores }: { gestores: GestorMetric[] 
         <div>
           <CardTitle>Mapa de performance</CardTitle>
           <p className="theme-muted mt-1 text-sm">
-            Compara taxa de sucesso e LTV médio com dados reais de cada gestor.
+            Compara taxa de sucesso e LTV médio por mês com dados reais de cada gestor.
           </p>
         </div>
       </CardHeader>
@@ -647,8 +661,8 @@ export function GestorPerformanceChart({ gestores }: { gestores: GestorMetric[] 
               <Line
                 yAxisId="right"
                 type="monotone"
-                dataKey="LTV médio"
-                name="LTV médio"
+                dataKey="LTV médio por mês"
+                name="LTV médio por mês"
                 stroke="var(--success-color)"
                 strokeWidth={3}
                 dot={{ r: 4, fill: "var(--success-color)" }}

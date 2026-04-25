@@ -47,7 +47,7 @@ export function GestoresPage() {
                 <div>
                   <CardTitle>Resumo por gestor</CardTitle>
                   <p className="theme-muted mt-1 text-sm">
-                    Ranking com taxa de sucesso e LTV médio de cada carteira.
+                    Ranking com taxa de sucesso e LTV médio por mês de cada carteira.
                   </p>
                 </div>
                 <div className="theme-soft-surface theme-muted inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs uppercase tracking-[0.18em]">
@@ -69,7 +69,7 @@ export function GestoresPage() {
                           </div>
                           <div>
                             <p className="theme-text text-base font-semibold">{gestor.nome}</p>
-                            <p className="theme-muted text-sm">{formatMonths(gestor.ltv_medio)} meses de LTV médio</p>
+                            <p className="theme-muted text-sm">{formatMonths(gestor.ltv_medio)} meses de LTV médio por mês</p>
                           </div>
                         </div>
                         <Badge tone={tone}>{formatPercent(gestor.taxa_sucesso)}</Badge>
